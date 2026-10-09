@@ -1,0 +1,365 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-sans: var(--font-outfit);
+    --font-mono: var(--font-plex-mono);
+
+    /* Editorial palette (design style tile) */
+    --color-paper: var(--paper);
+    --color-stone: var(--stone);
+    --color-ink: var(--ink);
+    --color-ink-soft: var(--ink-soft);
+    --color-ink-muted: var(--ink-muted);
+    --color-line: var(--line);
+    --color-line-soft: var(--line-soft);
+    --color-night: var(--night);
+    --color-night-raised: var(--night-raised);
+    --color-night-muted: var(--night-muted);
+    --color-highland: var(--highland);
+    --color-highland-deep: var(--highland-deep);
+    --color-highland-tint: var(--highland-tint);
+    --color-rose-tint: var(--rose-tint);
+    --color-soot: var(--soot);
+    --color-soot-muted: var(--soot-muted);
+
+    /* shadcn tokens, mapped onto the palette so ui/* components follow it */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --radius-sm: calc(var(--radius) - 2px);
+    --radius-md: var(--radius);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+}
+
+:root {
+    --paper: #f4f1ea;
+    --stone: #eae5da;
+    --ink: #1a1714;
+    --ink-soft: #4a453e;
+    --ink-muted: #5f5a52;
+    --line: #cfc7b8;
+    --line-soft: #ddd6c8;
+    --night: #15283a;
+    --night-raised: #21384d;
+    --night-muted: #afc0d0;
+    /* #5A95C9 fails 4.5:1 under white text, so filled buttons use the deep shade */
+    --highland: #5a95c9;
+    --highland-deep: #2f6a9f;
+    --highland-tint: #dce9f5;
+    --rose-tint: #f6dedc;
+    --soot: #141210;
+    --soot-muted: #a39c91;
+
+    --background: var(--paper);
+    --foreground: var(--ink);
+    --card: #ffffff;
+    --card-foreground: var(--ink);
+    --popover: #ffffff;
+    --popover-foreground: var(--ink);
+    --primary: var(--highland-deep);
+    --primary-foreground: #ffffff;
+    --secondary: var(--stone);
+    --secondary-foreground: var(--ink);
+    --muted: var(--stone);
+    --muted-foreground: var(--ink-muted);
+    --accent: var(--highland);
+    --accent-foreground: var(--ink);
+    --destructive: #a8322b;
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--highland);
+    --radius: 4px;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+        font-size: 16px;
+        line-height: 1.55;
+    }
+    /* Emphasis is weight contrast, not italics: Outfit has no italic. */
+    em {
+        font-style: normal;
+        font-weight: 300;
+    }
+    select,
+    input,
+    textarea,
+    button {
+        font: inherit;
+    }
+}
+
+@layer components {
+    .wrap {
+        max-width: 1440px;
+        margin-inline: auto;
+        padding-inline: clamp(16px, 4vw, 64px);
+    }
+    .display {
+        font-weight: 600;
+        line-height: 1.12;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+    }
+    .h-section {
+        font-weight: 600;
+        line-height: 1.12;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+        font-size: clamp(24px, 2.4vw, 36px);
+    }
+    .h-sub {
+        font-weight: 600;
+        line-height: 1.12;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+        font-size: clamp(22px, 2vw, 32px);
+    }
+    .standfirst {
+        font-size: 16px;
+        font-weight: 300;
+        color: var(--ink-soft);
+    }
+    .meta {
+        font-family: var(--font-mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .btn,
+    .btn-primary,
+    .btn-dark,
+    .btn-outline,
+    .btn-outline-light {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+            background-color 0.2s,
+            color 0.2s,
+            border-color 0.2s;
+    }
+    .btn-primary {
+        background: var(--highland-deep);
+        color: #fff;
+    }
+    .btn-primary:hover {
+        background: #255a88;
+    }
+    .btn-dark {
+        background: var(--ink);
+        color: var(--paper);
+    }
+    .btn-dark:hover {
+        background: #000;
+    }
+    .btn-outline {
+        border: 1px solid currentColor;
+    }
+    .btn-outline:hover {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+    }
+    .btn-outline-light {
+        border: 1px solid rgb(255 255 255 / 0.55);
+        color: #fff;
+    }
+    .btn-outline-light:hover {
+        background: rgb(255 255 255 / 0.12);
+    }
+    .btn-mono {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1.5px solid var(--ink);
+        border-radius: 999px;
+        padding: 11px 22px;
+        transition:
+            background-color 0.2s,
+            color 0.2s;
+    }
+
+    .chip {
+        min-height: 44px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        border: 1px solid #bdb4a4;
+        font-size: 14px;
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+            background-color 0.2s,
+            color 0.2s;
+    }
+    .chip[aria-pressed="true"] {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: var(--paper);
+    }
+
+    /* Image zoom + button fill on card hover */
+    .ht-card img,
+    .ht-tile img {
+        transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .ht-card:hover img,
+    .ht-tile:hover img {
+        transform: scale(1.04);
+    }
+    .ht-card:hover .btn-mono {
+        background: var(--ink);
+        color: var(--paper);
+    }
+
+    /* Underlined form fields used on dark enquiry panels */
+    .field-line {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 14px;
+        color: var(--night-muted);
+    }
+    .field-line input,
+    .field-line select,
+    .field-line textarea {
+        border: 0;
+        border-bottom: 1px solid rgb(244 241 234 / 0.5);
+        background: transparent;
+        padding: 8px 0;
+        font-size: 16px;
+        color: var(--paper);
+        border-radius: 0;
+        outline: none;
+    }
+    .field-line select option {
+        background: var(--night);
+    }
+    .field-line input:focus,
+    .field-line select:focus,
+    .field-line textarea:focus {
+        border-bottom-color: var(--highland);
+    }
+
+    /* Rich text from the CMS (blogs, info pages, trip overview) */
+    .rich {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #2e2a25;
+    }
+    .rich > * + * {
+        margin-top: 1em;
+    }
+    .rich h2,
+    .rich h3,
+    .rich h4 {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+        line-height: 1.15;
+        color: var(--ink);
+        margin-top: 1.8em;
+    }
+    /* Clear the sticky header when jumping from the table of contents. */
+    .rich h2,
+    .rich h3 {
+        scroll-margin-top: 88px;
+    }
+    .rich h2 {
+        font-size: 24px;
+    }
+    .rich h3 {
+        font-size: 19px;
+    }
+    .rich a {
+        color: var(--highland-deep);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+    .rich ul {
+        list-style: disc;
+        padding-left: 1.25em;
+    }
+    .rich ol {
+        list-style: decimal;
+        padding-left: 1.25em;
+    }
+    .rich img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    .rich blockquote {
+        border-left: 2px solid var(--highland);
+        padding-left: 1em;
+        font-weight: 300;
+        font-size: 19px;
+    }
+    .rich table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        font-size: 16px;
+    }
+    .rich th,
+    .rich td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+    }
+    .rich th {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+    }
+}
+
+@layer utilities {
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+}
