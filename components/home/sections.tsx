@@ -21,7 +21,7 @@ import BlogCard from "@/components/site/blog-card";
 import TestimonialQuote from "@/components/home/testimonial-quote";
 import { RailControls, RailTrack, ScrollRail } from "@/components/home/scroll-rail";
 import NewsletterForm from "@/components/site/newsletter-form";
-import { ArrowRightIcon, CheckIcon, ExternalLinkIcon, StarIcon, UserIcon } from "lucide-react";
+import { ArrowRightIcon, CheckIcon, StarIcon, UserIcon } from "lucide-react";
 
 export type Destination = { key: string; name: string; image?: string; href: string };
 
@@ -523,7 +523,6 @@ export function Testimonials({ ctx }: { ctx: HomeCtx }) {
                       <Stars rating={p.rating} size={14} className="text-highland-deep" />
                     </span>
                     <span className="text-[14px] text-ink-muted">{p.count} reviews</span>
-                    <ExternalLinkIcon size={14} strokeWidth={1.8} className="text-ink-muted transition-colors group-hover:text-ink" />
                   </a>
                 </li>
               ))}
