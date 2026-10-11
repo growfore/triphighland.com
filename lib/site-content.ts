@@ -53,6 +53,7 @@ export type SiteContent = {
       included?: string;
       excluded?: string;
       goodToKnow?: string;
+      addons?: string;
     };
     facts?: {
       duration?: string;

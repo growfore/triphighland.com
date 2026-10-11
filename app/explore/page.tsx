@@ -59,7 +59,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         fields={header}
         title="Explore"
       >
-        <form action="/explore" role="search" className="mt-10 flex max-w-[620px] items-center gap-2 rounded-full bg-white p-2 pl-6 text-ink">
+        <form action="/explore" role="search" className="mt-10 flex max-w-[620px] items-center gap-2 bg-white p-2 pl-6 text-ink">
           {filters.category && <input type="hidden" name="category" value={filters.category} />}
           {filters.country && <input type="hidden" name="country" value={filters.country} />}
           {filters.city && <input type="hidden" name="city" value={filters.city} />}

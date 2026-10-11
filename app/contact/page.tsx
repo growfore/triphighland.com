@@ -63,7 +63,13 @@ export default async function ContactPage() {
         <div className="min-w-0 flex-[1_1_520px] rounded-[4px] bg-night p-6 text-paper sm:p-12">
           <h2 className="display text-xl sm:text-2xl">{labels.trip.bookNow}</h2>
           <div className="mt-8">
-            <EnquiryForm trips={trips.map((t) => t.title)} whatsapp={whatsapp} labels={labels.trip} />
+            <EnquiryForm
+              trips={trips.map((t) => t.title)}
+              tripSlugs={Object.fromEntries(trips.map((t) => [t.title, t.slug]))}
+              currency={config.content.tripCard?.currency || "$"}
+              whatsapp={whatsapp}
+              labels={labels.trip}
+            />
           </div>
         </div>
       </section>

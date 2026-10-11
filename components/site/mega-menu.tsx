@@ -48,8 +48,8 @@ function PlaceChips({ entry, dark }: { entry: NavItem; dark?: boolean }) {
   const places = placesUnder(entry);
   if (!places.length) return null;
   const chip = dark
-    ? "rounded-full border border-white/30 px-3 py-1 text-[13px] hover:border-white"
-    : "rounded-full border border-line px-3 py-1 text-[13px] hover:border-highland-deep hover:text-highland-deep";
+    ? "border border-white/30 px-3 py-1 text-[13px] hover:border-white"
+    : "border border-line px-3 py-1 text-[13px] hover:border-highland-deep hover:text-highland-deep";
   return (
     <div className="flex flex-wrap gap-2">
       {places.slice(0, MAX_PLACES).map((p) => (
@@ -257,7 +257,7 @@ export function MobileMegaMenu({ item, trips }: { item: NavItem; trips: Record<s
 
       <div className="pb-6">
         {item.children.length > 1 && (
-          <div role="tablist" className="mb-4 flex gap-1 rounded-full bg-white/10 p-1">
+          <div role="tablist" className="mb-4 flex gap-1 bg-white/10 p-1">
             {item.children.map((g) => (
               <button
                 key={g.id}
@@ -265,7 +265,7 @@ export function MobileMegaMenu({ item, trips }: { item: NavItem; trips: Record<s
                 role="tab"
                 aria-selected={g.id === group?.id}
                 onClick={() => setGroupId(g.id)}
-                className={`flex-1 rounded-full px-3 py-2 text-[13px] font-medium ${
+                className={`flex-1 px-3 py-2 text-[13px] font-medium ${
                   g.id === group?.id ? "bg-paper text-night" : "text-night-muted"
                 }`}
               >

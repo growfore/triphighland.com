@@ -25,7 +25,6 @@ import {
   Information,
   Journal,
   Newsletter,
-  Plan,
   Stats,
   Testimonials,
   TripOfMonth,
@@ -35,8 +34,9 @@ import {
 
 export const revalidate = 300;
 
-// Used only when the dashboard has never saved a section order.
-const DEFAULT_ORDER = ["whyUs", "categoryTiles", "tripOfMonth", "featured", "featuredRail", "testimonials", "blog", "newsletter"];
+// Used only when the dashboard has never saved a section order. No newsletter:
+// the footer carries the signup on every page.
+const DEFAULT_ORDER = ["whyUs", "categoryTiles", "tripOfMonth", "featured", "featuredRail", "testimonials", "blog"];
 
 export default async function HomePage() {
   const [config, { trips, total }, groups, categories, countries, cities, { testimonials, total: testimonialTotal }, team, blogs, homeSections] =
@@ -126,17 +126,33 @@ export default async function HomePage() {
     }
   };
 
+  // Fixed tail, after the dashboard-ordered sections: Information sits right
+  // above the destinations, and the journal closes the page (above the
+  // footer's benefits band) when it is shown.
+  const destinationsId = order.find((id) => id === "destinations" || id === "countries" || id === "regions");
+  const showJournal = order.includes("blog");
+  const body = order.filter((id) => !(tilesInFeatured && id === tilesId) && id !== "blog");
+
   return (
     <main>
       <Hero ctx={ctx} />
-      {order.filter((id) => !(tilesInFeatured && id === tilesId)).map((id) => (
+      {body.map((id) => (
         <div key={id} data-section={id}>
+          {id === destinationsId && <Information ctx={ctx} />}
           {render(id)}
         </div>
       ))}
-      {!order.includes("destinations") && !order.includes("countries") && <Destinations ctx={ctx} copy={s.destinations} />}
-      <Information ctx={ctx} />
-      <Plan ctx={ctx} />
+      {!destinationsId && (
+        <>
+          <Information ctx={ctx} />
+          <Destinations ctx={ctx} copy={s.destinations} />
+        </>
+      )}
+      {showJournal && (
+        <div data-section="blog">
+          <Journal ctx={ctx} />
+        </div>
+      )}
     </main>
   );
 }

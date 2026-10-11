@@ -147,7 +147,7 @@ export default function SearchDialog({ onClose, labels }: { onClose: () => void;
           aria-activedescendant={active >= 0 ? `search-result-${active}` : undefined}
           className="min-w-0 flex-1 bg-transparent py-2 text-lg outline-none placeholder:text-ink-muted [&::-webkit-search-cancel-button]:hidden"
         />
-        <button type="button" onClick={close} aria-label="Close" className="flex size-10 flex-none items-center justify-center rounded-full hover:bg-stone">
+        <button type="button" onClick={close} aria-label="Close" className="flex size-10 flex-none items-center justify-center hover:bg-stone">
           <XIcon strokeWidth={1.8} size={18} />
         </button>
       </form>

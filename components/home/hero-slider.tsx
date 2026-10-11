@@ -70,7 +70,7 @@ export default function HeroSlider({
               onClick={() => setI(k)}
               aria-label={`Show ${slide.title}`}
               aria-current={k === i}
-              className="size-2.5 rounded-full bg-white/40 transition-colors aria-current:bg-white"
+              className="size-2.5 bg-white/40 transition-colors aria-current:bg-white"
             />
           ))}
         </div>
@@ -80,7 +80,7 @@ export default function HeroSlider({
         type="button"
         aria-label="Scroll down"
         onClick={() => sectionRef.current?.nextElementSibling?.scrollIntoView({ behavior: "smooth" })}
-        className="absolute inset-x-0 bottom-6 z-10 mx-auto flex size-11 w-fit animate-bounce items-center justify-center rounded-full text-white/80 transition-colors hover:text-white"
+        className="absolute inset-x-0 bottom-6 z-10 mx-auto flex size-11 w-fit animate-bounce items-center justify-center text-white/80 transition-colors hover:text-white"
       >
         <ChevronDownIcon size={26} strokeWidth={1.6} />
       </button>

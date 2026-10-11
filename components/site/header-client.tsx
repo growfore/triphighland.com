@@ -101,8 +101,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
               </a>
             )}
             <Link
-              href="/booking"
-              data-enquire
+              href="/design-your-trip"
               className="flex items-center bg-highland-deep px-6 text-[13px] font-medium uppercase tracking-[0.04em] text-white hover:bg-[#255a88]"
             >
               {labels.bookNow}
@@ -147,7 +146,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
               type="button"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
-              className="flex size-11 items-center justify-center rounded-full border border-white/40"
+              className="flex size-11 items-center justify-center border border-white/40"
             >
               <XIcon size={20} strokeWidth={1.8} />
             </button>
@@ -161,7 +160,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
               ),
             )}
             <div className="mt-auto flex flex-col gap-3 pt-10">
-              <Link href="/booking" data-enquire onClick={() => setOpen(false)} className="btn-primary">
+              <Link href="/design-your-trip" className="btn-primary">
                 {labels.bookNow}
               </Link>
               {whatsapp && (

@@ -23,7 +23,7 @@ import {
   LucideStar,
   LucideMap,
   LucideLoader2,
-  LucideImageOff,
+  LucideCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/form";
 
 import { useSiteContact } from "@/components/site/use-site-contact";
+import Photo from "@/components/site/photo";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -234,6 +235,7 @@ function foodLabel(v: FoodPrefValue): string {
 
 // ── Experience Type Card ──────────────────────────────────────────────────────
 
+// Trip categories, styled like the homepage category tiles.
 function ExperienceTypeCard({
   category,
   selected,
@@ -243,58 +245,23 @@ function ExperienceTypeCard({
   selected: boolean;
   onClick: () => void;
 }) {
-  const [imgError, setImgError] = useState(false);
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative overflow-hidden rounded-xl border-2 transition-all text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-        selected
-          ? "border-primary shadow-md scale-[1.02]"
-          : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+      aria-pressed={selected}
+      className={`ht-tile relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-[4px] text-left text-white outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-highland-deep focus-visible:ring-offset-2 ${
+        selected ? "ring-[3px] ring-highland-deep ring-offset-2" : ""
       }`}
     >
-      {/* Image */}
-      <div className="relative w-full h-28 bg-gray-100">
-        {category.categoryImage && !imgError ? (
-          <img
-            src={category.categoryImage}
-            alt={category.categoryName}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <LucideImageOff className="w-6 h-6 text-gray-300" />
-          </div>
-        )}
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-        {/* Selected checkmark */}
-        {selected && (
-          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow">
-            <LucideCheckCircle2 className="w-4 h-4 text-white" />
-          </div>
-        )}
-      </div>
-
-      {/* Label */}
-      <div
-        className={`px-3 py-2.5 transition-colors ${
-          selected ? "bg-primary/5" : "bg-white"
-        }`}
-      >
-        <p
-          className={`text-sm font-medium leading-tight ${
-            selected ? "text-primary" : "text-gray-700"
-          }`}
-        >
-          {category.categoryName}
-        </p>
-      </div>
+      <Photo src={category.categoryImage} alt="" sizes="(min-width: 640px) 220px, 50vw" />
+      <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,0)_35%,rgba(14,12,10,.8)_100%)]" />
+      {selected && (
+        <span className="absolute right-2 top-2 flex size-7 items-center justify-center bg-highland-deep text-white">
+          <LucideCheck className="size-4" strokeWidth={2.5} />
+        </span>
+      )}
+      <span className="display relative p-3 text-[14px] leading-tight sm:p-4 sm:text-[15px]">{category.categoryName}</span>
     </button>
   );
 }
@@ -623,27 +590,6 @@ export function ItineraryForm_Component() {
                               ))}
                             </div>
 
-                            {/* Selected category banner */}
-                            {field.value && selectedCategory && (
-                              <div className="mt-3 flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
-                                {selectedCategory.categoryImage && (
-                                  <img
-                                    src={selectedCategory.categoryImage}
-                                    alt={selectedCategory.categoryName}
-                                    className="w-10 h-10 rounded-md object-cover shrink-0"
-                                  />
-                                )}
-                                <div>
-                                  <p className="text-xs text-gray-500 font-medium">
-                                    Selected experience
-                                  </p>
-                                  <p className="text-sm font-semibold text-primary">
-                                    {selectedCategory.categoryName}
-                                  </p>
-                                </div>
-                                <LucideCheckCircle2 className="w-4 h-4 text-primary ml-auto shrink-0" />
-                              </div>
-                            )}
                           </>
                         )}
 
@@ -776,7 +722,7 @@ export function ItineraryForm_Component() {
                             <button
                               type="button"
                               onClick={() => remove(index)}
-                              className="mt-6 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="mt-6 p-1.5 rounded-none text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                             >
                               <LucideTrash2 className="w-4 h-4" />
                             </button>
@@ -1120,11 +1066,9 @@ export function ItineraryForm_Component() {
                     {selectedCategory && (
                       <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-200">
                         {selectedCategory.categoryImage && (
-                          <img
-                            src={selectedCategory.categoryImage}
-                            alt={selectedCategory.categoryName}
-                            className="w-14 h-14 rounded-lg object-cover shrink-0"
-                          />
+                          <span className="relative size-14 shrink-0 overflow-hidden rounded-[4px]">
+                            <Photo src={selectedCategory.categoryImage} alt="" sizes="56px" />
+                          </span>
                         )}
                         <div>
                           <p className="text-xs text-gray-400 font-medium">
@@ -1189,7 +1133,7 @@ export function ItineraryForm_Component() {
                   variant="outline"
                   onClick={goPrev}
                   disabled={step === 0}
-                  className="border-gray-300 text-gray-600 h-11 px-6 rounded-md"
+                  className="border-gray-300 text-gray-600 h-11 px-6 rounded-none"
                 >
                   Back
                 </Button>
@@ -1198,7 +1142,7 @@ export function ItineraryForm_Component() {
                   <Button
                     type="button"
                     onClick={goNext}
-                    className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 h-11 rounded-md"
+                    className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 h-11 rounded-none"
                   >
                     Continue
                   </Button>
@@ -1206,7 +1150,7 @@ export function ItineraryForm_Component() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 h-11 rounded-md gap-2 transition-colors"
+                    className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 h-11 rounded-none gap-2 transition-colors"
                   >
                     <LucideSend className="w-4 h-4" />
                     {isSubmitting ? "Sending…" : "Send My Request"}

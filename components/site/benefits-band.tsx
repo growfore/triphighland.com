@@ -14,7 +14,7 @@ export default async function BenefitsBand() {
   const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
 
   return (
-    <section aria-label="Benefits" className="border-t border-line bg-stone">
+    <section aria-label="Benefits" className="border-t border-line bg-white">
       <ul className={`wrap grid grid-cols-1 gap-x-10 gap-y-10 py-12 sm:grid-cols-2 lg:py-16 ${cols}`}>
         {items.map((b, i) => {
           const Icon = SLOT_ICONS[i % SLOT_ICONS.length];

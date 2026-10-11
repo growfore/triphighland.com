@@ -115,10 +115,14 @@
         font-family: var(--font-display);
         font-weight: 700;
     }
-    /* Emphasis is weight contrast, not italics (matches the heading style). */
+    /* Emphasis is weight contrast, not italics. */
     em {
         font-style: normal;
         font-weight: 300;
+    }
+    /* Titles are one weight throughout: no light words inside them. */
+    :is(h1, h2, h3, h4, h5, h6, .display, .h-section, .h-sub) em {
+        font-weight: inherit;
     }
     select,
     input,
@@ -179,7 +183,7 @@
         gap: 10px;
         min-height: 44px;
         padding: 12px 24px;
-        border-radius: 999px;
+        border-radius: 0;
         font-weight: 500;
         text-decoration: none;
         cursor: pointer;
@@ -223,7 +227,7 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         border: 1.5px solid var(--ink);
-        border-radius: 999px;
+        border-radius: 0;
         padding: 11px 22px;
         transition:
             background-color 0.2s,
@@ -233,7 +237,7 @@
     .chip {
         min-height: 44px;
         padding: 9px 18px;
-        border-radius: 999px;
+        border-radius: 0;
         border: 1px solid #bdb4a4;
         font-size: 14px;
         white-space: nowrap;

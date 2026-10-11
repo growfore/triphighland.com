@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { Labels } from "@/lib/labels";
 import { whatsappLink } from "@/lib/media";
-import EnquiryForm from "./enquiry-form";
+import EnquiryForm, { type AddonOption } from "./enquiry-form";
 import { XIcon } from "lucide-react";
 
 type Props = {
   trips: string[];
+  // Journey title → slug, so the general form can load a picked trip's add-ons.
+  tripSlugs: Record<string, string>;
+  currency: string;
   whatsAppNumber?: string;
   heading: { eyebrow?: string; title: string; subtitle?: string };
   labels: Labels["trip"];
@@ -18,9 +21,12 @@ type Props = {
 // components can trigger it with plain markup. Links keep a real href
 // (e.g. /booking) for no-JS and modified clicks. A trip page marks its
 // <main> with data-enquiry-trip, and the form then asks about that trip.
-export default function EnquirySheet({ trips, whatsAppNumber, heading, labels }: Props) {
+export default function EnquirySheet({ trips, tripSlugs, currency, whatsAppNumber, heading, labels }: Props) {
   const [open, setOpen] = useState(false);
   const [trip, setTrip] = useState<string | undefined>();
+  // The trip page's add-ons, plus the one whose card opened the sheet.
+  const [addons, setAddons] = useState<AddonOption[]>([]);
+  const [addon, setAddon] = useState<string | undefined>();
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -28,7 +34,16 @@ export default function EnquirySheet({ trips, whatsAppNumber, heading, labels }:
       const trigger = (e.target as Element | null)?.closest('[data-enquire], a[href="#enquire"]');
       if (!trigger) return;
       e.preventDefault();
-      setTrip(document.querySelector<HTMLElement>("[data-enquiry-trip]")?.dataset.enquiryTrip || undefined);
+      const page = document.querySelector<HTMLElement>("[data-enquiry-trip]");
+      setTrip(page?.dataset.enquiryTrip || undefined);
+      let list: AddonOption[] = [];
+      try {
+        list = JSON.parse(page?.dataset.enquiryAddons || "[]");
+      } catch {
+        /* malformed: no add-ons */
+      }
+      setAddons(Array.isArray(list) ? list : []);
+      setAddon((trigger as HTMLElement).dataset.enquiryAddon || undefined);
       setOpen(true);
     }
     // Capture phase: runs before next/link's handler, which skips navigation
@@ -50,7 +65,7 @@ export default function EnquirySheet({ trips, whatsAppNumber, heading, labels }:
             </div>
             <Dialog.Close
               aria-label="Close"
-              className="flex size-11 flex-none items-center justify-center rounded-full border border-white/40 hover:bg-white/10"
+              className="flex size-11 flex-none items-center justify-center border border-white/40 hover:bg-white/10"
             >
               <XIcon size={20} strokeWidth={1.8} />
             </Dialog.Close>
@@ -65,6 +80,10 @@ export default function EnquirySheet({ trips, whatsAppNumber, heading, labels }:
               variant={trip ? "trip" : "plan"}
               trips={trip ? [trip] : trips}
               defaultTrip={trip}
+              addons={trip ? addons : undefined}
+              defaultAddons={addon ? [addon] : undefined}
+              tripSlugs={trip ? undefined : tripSlugs}
+              currency={currency}
               whatsapp={whatsappLink(whatsAppNumber, trip)}
               labels={labels}
               submitClassName="btn meta bg-highland px-8 py-5 text-[14px] tracking-[0.1em] text-[#0E1F2E] hover:bg-[#6fa5d4] disabled:opacity-60"

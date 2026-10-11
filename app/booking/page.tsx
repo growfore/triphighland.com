@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getSiteConfig, getTrips } from "@/lib/site";
+import { getExtras, getSiteConfig, getTrip, getTrips } from "@/lib/site";
 import { whatsappLink } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import Photo from "@/components/site/photo";
@@ -19,6 +19,10 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
   const header = config.content.pageHeaders?.booking;
   const selected = trips.find((t) => t.slug === tripSlug);
   const sorted = [...trips].sort((a, b) => a.title.localeCompare(b.title));
+  // A preselected trip's add-ons render with the page; other journeys load theirs when picked.
+  const detail = selected ? await getTrip(selected.slug) : null;
+  const extras = detail?.extraIds.length ? await getExtras() : [];
+  const addons = (detail?.extraIds ?? []).flatMap((id) => extras.filter((e) => e.id === id)).map((e) => ({ name: e.name, price: e.price }));
 
   return (
     <main className="bg-night text-paper">
@@ -33,7 +37,15 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
           </h1>
           {header?.subtitle && <p className="mt-5 max-w-[460px] text-base font-light text-night-muted">{header.subtitle}</p>}
           <div className="mt-10">
-            <EnquiryForm trips={sorted.map((t) => t.title)} defaultTrip={selected?.title} whatsapp={whatsappLink(config.whatsAppNumber)} labels={getLabels(config.content).trip} />
+            <EnquiryForm
+              trips={sorted.map((t) => t.title)}
+              defaultTrip={selected?.title}
+              addons={addons}
+              tripSlugs={Object.fromEntries(trips.map((t) => [t.title, t.slug]))}
+              currency={config.content.tripCard?.currency || "$"}
+              whatsapp={whatsappLink(config.whatsAppNumber)}
+              labels={getLabels(config.content).trip}
+            />
           </div>
         </div>
       </div>

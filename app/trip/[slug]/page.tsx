@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCities, getCountries, getSiteConfig, getTrip, getTrips } from "@/lib/site";
+import { getCities, getCountries, getExtras, getSiteConfig, getTrip, getTrips } from "@/lib/site";
 import { formatAltitude, formatGrade, formatPrice, imageUrl, stripHtml } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import { plainContent, richContent } from "@/lib/rich-content";
@@ -38,12 +38,15 @@ export default async function TripPage({ params }: Props) {
   const trip = await getTrip(slug);
   if (!trip) notFound();
 
-  const [config, countries, cities, { trips }] = await Promise.all([
+  const [config, countries, cities, { trips }, extras] = await Promise.all([
     getSiteConfig(),
     getCountries(),
     getCities(),
     getTrips({ limit: 12 }),
+    trip.extraIds.length ? getExtras() : Promise.resolve([]),
   ]);
+  // Keep the trip's own order of add-ons; ids missing from the catalogue drop out.
+  const addons = trip.extraIds.flatMap((id) => extras.filter((e) => e.id === id));
   const country = countries.find((c) => c.id === trip.countryId);
   const city = cities.find((c) => c.id === trip.cityId);
   const related = trips.filter((t) => t.slug !== trip.slug).slice(0, 3);
@@ -66,7 +69,7 @@ export default async function TripPage({ params }: Props) {
 
   return (
     // Read by the site-wide enquiry sheet to pre-fill this trip.
-    <main data-enquiry-trip={trip.title}>
+    <main data-enquiry-trip={trip.title} data-enquiry-addons={JSON.stringify(addons.map((a) => ({ name: a.name, price: a.price })))}>
       {/* SPLIT HERO */}
       <section className="flex flex-wrap bg-night text-white">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col px-4 pb-12 pt-8 sm:px-[clamp(20px,4vw,64px)] lg:min-h-[720px] lg:pb-18 lg:pt-16">
@@ -205,6 +208,40 @@ export default async function TripPage({ params }: Props) {
         </section>
       )}
 
+      {/* ADD-ONS */}
+      {addons.length > 0 && (
+        <section id="addons" className="border-t border-line-soft">
+          <div className="wrap py-16 lg:py-24">
+            <h2 className="h-sub">{L.trip.addons}</h2>
+            <ul className="mt-9 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {addons.map((a) => (
+                <li key={a.id} className="flex flex-col">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-stone">
+                    <Photo src={a.images[0]} alt={a.name} sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 100vw" />
+                  </div>
+                  {a.type && <p className="meta mt-4 text-[12px] text-ink-muted">{a.type.replace(/_/g, " ").toLowerCase()}</p>}
+                  <h3 className="display mt-2 text-[17px] leading-snug">{a.name}</h3>
+                  {a.description && <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">{a.description}</p>}
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-5">
+                    <button
+                      type="button"
+                      data-enquire
+                      data-enquiry-addon={a.name}
+                      className="btn-mono px-4 py-2 text-[12px]"
+                    >
+                      Ask about this
+                    </button>
+                    {a.price != null && (
+                      <span className="meta text-[14px] tracking-[0.06em]">+ {formatPrice(a.price, L.card.currency)}</span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* GOOD TO KNOW + FAQ — stacked accordions, styled like the itinerary */}
       {(trip.additionalInfo.length > 0 || trip.faq.flatMap((g) => g.items ?? []).length > 0) && (
         <section className="bg-[#ECEAE3]">
@@ -253,7 +290,7 @@ function AccordionRow({ title, html }: { title: string; html: string }) {
   return (
     <details className="group border-b border-line">
       <summary className="flex cursor-pointer list-none items-center gap-4 py-5 transition-colors hover:bg-[#E4E1D8] sm:py-6 [&::-webkit-details-marker]:hidden">
-        <span className="flex-1 text-base font-light uppercase leading-tight sm:text-[clamp(17px,1.5vw,22px)]">{title}</span>
+        <span className="display flex-1 text-base sm:text-[clamp(17px,1.5vw,22px)]">{title}</span>
         <span className="flex size-11 flex-none items-center justify-center transition-transform group-open:rotate-180">
           <ChevronDownIcon size={26} strokeWidth={1.6} />
         </span>

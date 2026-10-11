@@ -60,8 +60,13 @@ export type SiteConfig = {
   integrations: {
     ga?: { enabled?: boolean; id?: string };
     gtm?: { enabled?: boolean; id?: string };
+    metaPixel?: { enabled?: boolean; id?: string };
+    clarity?: { enabled?: boolean; id?: string };
+    tawk?: { enabled?: boolean; propertyId?: string; widgetId?: string };
     whatsapp?: { enabled?: boolean };
   };
+  // Cookie banner; when on, analytics/marketing tags wait for the visitor's yes.
+  consent: { enabled: boolean };
   content: SiteContent;
 };
 
@@ -95,6 +100,7 @@ export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
     documents: Array.isArray(c.documents) ? c.documents : [],
     associations: c.associations,
     integrations: c.integrations ?? {},
+    consent: { enabled: c.consent?.enabled === true },
     content: c.content ?? {},
   };
 });
@@ -144,6 +150,9 @@ export type TripDetail = TripSummary & {
   cityId?: string | null;
   tripCategoryId?: string | null;
   seo?: { metaTitle?: string; metaDescription?: string; featuredMedia?: string | null };
+  // Optional add-ons offered on this trip, resolved via getExtras().
+  extraIds: number[];
+  featuredTags: { slug: string; name: string; description?: string; showOnHomepage?: boolean; order?: number }[];
 };
 
 export type TripQuery = {
@@ -201,7 +210,34 @@ export const getTrip = cache(async (slug: string): Promise<TripDetail | null> =>
     cityId: t.cityId,
     tripCategoryId: t.tripCategoryId,
     seo: parseJson(t.seo, undefined),
+    extraIds: parseJson<unknown[]>(t.extraIds, []).map(Number).filter(Number.isFinite),
+    featuredTags: parseJson<Raw[]>(t.featuredTags, [])
+      .filter((g) => g?.slug && g?.name)
+      .map((g) => ({
+        slug: String(g.slug),
+        name: String(g.name),
+        description: g.description || undefined,
+        showOnHomepage: g.showOnHomepage,
+        order: typeof g.order === "number" ? g.order : undefined,
+      })),
   };
+});
+
+/* ---------- Extras (trip add-ons) ---------- */
+
+export type Extra = { id: number; type?: string; name: string; description?: string; images: string[]; price: number | null };
+
+// The tenant's whole add-on catalogue; trips reference entries by id.
+export const getExtras = cache(async (): Promise<Extra[]> => {
+  const body = await getJson<{ data?: { extras?: Raw[] } }>("/extras?page=1&limit=100");
+  return (body?.data?.extras ?? []).map((e) => ({
+    id: Number(e.id),
+    type: e.type || undefined,
+    name: e.name,
+    description: e.description || undefined,
+    images: parseJson<string[]>(e.images, []),
+    price: e.price == null ? null : Number(e.price),
+  }));
 });
 
 /* ---------- Taxonomy ---------- */
@@ -246,7 +282,7 @@ export const getFooterNav = cache(() => getNav("/footer"));
 // real source; while TripEleven keeps it dashboard-only for API keys it 401s,
 // and we fall back to the auto-generated footer, which lists every featured tag
 // that has trips (tags with no published trips are absent there).
-export type FeaturedGroup = { slug: string; label: string; description?: string; tripSlugs: string[] };
+export type FeaturedGroup = { slug: string; label: string; description?: string; showOnHomepage?: boolean; tripSlugs: string[] };
 
 export const getFeaturedGroups = cache(async (): Promise<FeaturedGroup[]> => {
   const index = await getJson<{
@@ -259,7 +295,7 @@ export const getFeaturedGroups = cache(async (): Promise<FeaturedGroup[]> => {
   }
 
   const footer = await getJson<{ data?: { autoItems?: NavItem[] } }>("/footer");
-  return (footer?.data?.autoItems ?? [])
+  const fromFooter = (footer?.data?.autoItems ?? [])
     .filter((i) => i.id.startsWith("featuredtag-"))
     .map((i) => ({
       slug: i.id.replace(/^featuredtag-/, ""),
@@ -269,6 +305,30 @@ export const getFeaturedGroups = cache(async (): Promise<FeaturedGroup[]> => {
         .filter((s): s is string => Boolean(s)),
     }))
     .filter((g) => g.tripSlugs.length > 0);
+  if (fromFooter.length) return fromFooter;
+
+  // A footer with saved custom items has no autoItems, so read the tags off
+  // each trip's detail (cached like the trip pages' own fetches).
+  const { trips } = await getTrips({ limit: 50 });
+  const details = await Promise.all(trips.map((t) => getTrip(t.slug)));
+  const groups = new Map<string, FeaturedGroup & { order: number }>();
+  for (const trip of details) {
+    for (const tag of trip?.featuredTags ?? []) {
+      const g = groups.get(tag.slug) ?? {
+        slug: tag.slug,
+        label: tag.name,
+        description: tag.description,
+        showOnHomepage: tag.showOnHomepage,
+        order: tag.order ?? Number.MAX_SAFE_INTEGER,
+        tripSlugs: [],
+      };
+      g.tripSlugs.push(trip!.slug);
+      groups.set(tag.slug, g);
+    }
+  }
+  return [...groups.values()]
+    .sort((a, b) => a.order - b.order)
+    .map((g) => ({ slug: g.slug, label: g.label, description: g.description, showOnHomepage: g.showOnHomepage, tripSlugs: g.tripSlugs }));
 });
 
 /* ---------- People & words ---------- */

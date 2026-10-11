@@ -33,7 +33,7 @@ export default function OverviewMore({ title, html, preview }: { title: string; 
               type="button"
               onClick={() => ref.current?.close()}
               aria-label="Close"
-              className="flex size-10 items-center justify-center rounded-full hover:bg-stone"
+              className="flex size-10 items-center justify-center hover:bg-stone"
             >
               <XIcon strokeWidth={1.8} size={18} />
             </button>

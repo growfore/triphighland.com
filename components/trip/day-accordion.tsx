@@ -45,7 +45,7 @@ export default function DayAccordion({ days, labels }: { days: ItineraryDay[]; l
               className="flex w-full items-center gap-4 py-6 text-left transition-colors hover:bg-[#E4E1D8] sm:gap-5 sm:py-[30px]"
             >
               <span className="flex-none text-[19px] font-semibold uppercase leading-none lg:text-[26px]">Day {d.day}:</span>
-              <span className="flex-1 text-base font-light uppercase leading-tight sm:text-[clamp(17px,1.5vw,22px)]">{d.title}</span>
+              <span className="display flex-1 text-base sm:text-[clamp(17px,1.5vw,22px)]">{d.title}</span>
               <span className={`flex size-11 flex-none items-center justify-center transition-transform ${isOpen ? "rotate-180" : ""}`}>
                 <ChevronDownIcon size={28} strokeWidth={1.6} />
               </span>

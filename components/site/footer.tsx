@@ -4,6 +4,7 @@ import { imageUrl, whatsappLink } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import NewsletterForm from "./newsletter-form";
 import BenefitsBand from "./benefits-band";
+import { getIntegrations } from "@/lib/integrations";
 import Photo from "./photo";
 
 export default async function Footer() {
@@ -101,6 +102,11 @@ export default async function Footer() {
             <Link href="/contact" className="hover:text-paper">
               Contact
             </Link>
+            {getIntegrations(config).askConsent && (
+              <button type="button" data-cookie-settings className="hover:text-paper">
+                Cookie settings
+              </button>
+            )}
           </span>
         </div>
       </div>

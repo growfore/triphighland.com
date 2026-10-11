@@ -18,8 +18,8 @@ import Photo from "@/components/site/photo";
 import TripCard, { PriceFrom, tripMeta } from "@/components/site/trip-card";
 import HeroSlider from "@/components/home/hero-slider";
 import BlogCard from "@/components/site/blog-card";
-import EnquiryForm from "@/components/site/enquiry-form";
 import TestimonialQuote from "@/components/home/testimonial-quote";
+import { RailControls, RailTrack, ScrollRail } from "@/components/home/scroll-rail";
 import NewsletterForm from "@/components/site/newsletter-form";
 import { ArrowRightIcon, CheckIcon, StarIcon, UserIcon } from "lucide-react";
 
@@ -184,6 +184,8 @@ export const FEATURED_TAG_SECTIONS = 3;
 export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: ReactNode }) {
   const bySlug = new Map(ctx.trips.map((t) => [t.slug, t]));
   const sections = ctx.groups
+    // Tags switched off for the homepage in the dashboard stay out.
+    .filter((g) => g.showOnHomepage !== false)
     .map((g) => ({ ...g, trips: g.tripSlugs.map((s) => bySlug.get(s)).filter((t): t is TripSummary => Boolean(t)) }))
     .filter((g) => g.trips.length)
     .slice(0, FEATURED_TAG_SECTIONS);
@@ -194,22 +196,23 @@ export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: React
       {sections.map((g, i) => (
         <Fragment key={g.slug}>
           {/* Alternate backgrounds, counting the stone category tiles as one band. */}
-          <section id={`featured-${g.slug}`} className={(i + (afterFirst && i > 0 ? 1 : 0)) % 2 ? "bg-stone" : ""}>
-            <div className="wrap py-16 lg:py-24">
-              <div className="mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
+          <section id={`featured-${g.slug}`} className={`py-16 lg:py-24 ${(i + (afterFirst && i > 0 ? 1 : 0)) % 2 ? "bg-stone" : ""}`}>
+            <ScrollRail>
+              <div className="wrap mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
                 <div className="max-w-[760px]">
                   <h2 className="h-section">{g.label}</h2>
                   {g.description && <p className="standfirst mt-4">{plainContent(g.description)}</p>}
                 </div>
+                <RailControls />
               </div>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <RailTrack label={g.label}>
                 {g.trips.map((t) => (
-                  <div key={t.id} className="flex">
+                  <div key={t.id} className="flex w-[82vw] flex-none snap-start sm:w-[340px] xl:w-[360px]">
                     <TripCard trip={t} labels={ctx.labels.card} />
                   </div>
                 ))}
-              </div>
-            </div>
+              </RailTrack>
+            </ScrollRail>
           </section>
           {i === 0 && afterFirst}
         </Fragment>
@@ -278,24 +281,26 @@ export function CategoryTiles({ ctx }: { ctx: HomeCtx }) {
   return (
     <section id="styles" className="bg-stone">
       <div className="py-16 lg:py-30">
-        <div className="wrap">
-          <Heading copy={copy} fallback={<>Find <em>your</em> journey</>} />
-        </div>
-        <div className="wrap grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {ctx.categories.map((c) => (
-            <Link
-              key={c.id}
-              href={`/explore?category=${encodeURIComponent(c.categoryHandle)}`}
-              className="ht-tile relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-[4px] text-white"
-            >
-              <Photo src={c.categoryImage} alt="" sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,0)_45%,rgba(14,12,10,.78)_100%)]" />
-              <div className="relative p-5 sm:p-7">
-                <div className="display text-xl">{c.categoryName}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ScrollRail>
+          <div className="wrap">
+            <Heading copy={copy} fallback={<>Find <em>your</em> journey</>} aside={<RailControls />} />
+          </div>
+          <RailTrack label={copy?.title || "Trip styles"}>
+            {ctx.categories.map((c) => (
+              <Link
+                key={c.id}
+                href={`/explore?category=${encodeURIComponent(c.categoryHandle)}`}
+                className="ht-tile relative flex aspect-[4/5] w-[78vw] flex-none snap-start flex-col justify-end overflow-hidden rounded-[4px] text-white sm:w-[340px] xl:w-[360px]"
+              >
+                <Photo src={c.categoryImage} alt="" sizes="(min-width: 640px) 360px, 78vw" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,0)_45%,rgba(14,12,10,.78)_100%)]" />
+                <div className="relative p-5 sm:p-7">
+                  <div className="display text-xl">{c.categoryName}</div>
+                </div>
+              </Link>
+            ))}
+          </RailTrack>
+        </ScrollRail>
       </div>
     </section>
   );
@@ -306,18 +311,22 @@ export function CategoryTiles({ ctx }: { ctx: HomeCtx }) {
 export function Destinations({ ctx, copy }: { ctx: HomeCtx; copy?: SectionCopy }) {
   if (!ctx.destinations.length) return null;
   return (
-    <section className="wrap py-16 lg:py-32">
-      <Heading copy={copy} fallback={<>Where we <em>go</em></>} />
-      <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {ctx.destinations.slice(0, 6).map((d) => (
-          <Link key={d.key} href={d.href} className="ht-card">
-            <div className="relative aspect-[4/5] overflow-hidden">
-              <Photo src={d.image} alt={d.name} sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
-            </div>
-            <h3 className="display mt-5 text-base">{d.name}</h3>
-          </Link>
-        ))}
-      </div>
+    <section className="py-16 lg:py-32">
+      <ScrollRail>
+        <div className="wrap">
+          <Heading copy={copy} fallback={<>Where we <em>go</em></>} aside={<RailControls />} />
+        </div>
+        <RailTrack label={copy?.title || "Destinations"}>
+          {ctx.destinations.map((d) => (
+            <Link key={d.key} href={d.href} className="ht-card w-[78vw] flex-none snap-start sm:w-[300px] xl:w-[320px]">
+              <div className="relative aspect-[4/5] overflow-hidden">
+                <Photo src={d.image} alt={d.name} sizes="(min-width: 640px) 320px, 78vw" />
+              </div>
+              <h3 className="display mt-5 text-base">{d.name}</h3>
+            </Link>
+          ))}
+        </RailTrack>
+      </ScrollRail>
     </section>
   );
 }
@@ -557,29 +566,6 @@ export function Information({ ctx }: { ctx: HomeCtx }) {
               {info.ctaLabel}
             </Link>
           )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Plan / enquiry (pageHeaders.booking) ---------- */
-
-export function Plan({ ctx }: { ctx: HomeCtx }) {
-  const h = ctx.config.content.pageHeaders?.booking;
-  return (
-    <section id="plan" className="bg-night text-paper">
-      <div className="mx-auto flex max-w-[1440px] flex-wrap">
-        <div className="relative min-h-[320px] min-w-0 flex-[1_1_480px] lg:order-2 lg:min-h-[760px]">
-          <Photo src={h?.image || ctx.pick(6)} alt="" sizes="(min-width: 1024px) 50vw, 100vw" />
-        </div>
-        <div className="min-w-0 flex-[1_1_520px] px-4 py-14 sm:px-[clamp(20px,5vw,96px)] sm:py-[clamp(48px,6vw,112px)]">
-          {h?.eyebrow && <p className="meta mb-4 text-[12px] text-night-muted">{h.eyebrow}</p>}
-          <h2 className="display text-[27px] sm:text-[clamp(22px,2.3vw,35px)]">{h?.title || <>Tell us where you’d like to <em>go.</em></>}</h2>
-          {h?.subtitle && <p className="mt-5 max-w-[460px] text-base font-light text-night-muted">{h.subtitle}</p>}
-          <div className="mt-10">
-            <EnquiryForm trips={ctx.trips.map((t) => t.title)} whatsapp={ctx.whatsapp} labels={ctx.labels.trip} />
-          </div>
         </div>
       </div>
     </section>

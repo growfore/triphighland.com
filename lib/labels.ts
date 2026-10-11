@@ -20,6 +20,7 @@ export function getLabels(content: SiteContent) {
       included: tp.sectionLabels?.included || "Included",
       excluded: tp.sectionLabels?.excluded || "Excluded",
       goodToKnow: tp.sectionLabels?.goodToKnow || "Good to know",
+      addons: tp.sectionLabels?.addons || "Add-ons",
       duration: tp.facts?.duration || "Duration",
       difficulty: tp.facts?.difficulty || "Difficulty",
       groupSize: tp.facts?.groupSize || "Group size",
