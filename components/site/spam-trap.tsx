@@ -4,15 +4,28 @@ import { useEffect, useRef } from "react";
 
 // Lightweight bot filter for the enquiry forms: a field people never see (bots
 // fill every input) plus a minimum time between page load and submit.
-const FIELD = "company_website";
+// Deliberately meaningless: a name like "company_website" matches browser
+// autofill heuristics, which then fill the hidden field and drop real enquiries.
+const FIELD = "ht_hp_field";
 const MIN_FILL_MS = 3000;
 
 export function SpamTrap() {
   return (
     <div aria-hidden="true" className="absolute -left-[9999px] size-px overflow-hidden">
       <label>
-        Leave this empty
-        <input type="text" name={FIELD} tabIndex={-1} autoComplete="off" defaultValue="" />
+        Leave this blank
+        <input
+          type="text"
+          name={FIELD}
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+          // Keep password managers (1Password, LastPass, Bitwarden, Dashlane) out of it too.
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore
+          data-form-type="other"
+        />
       </label>
     </div>
   );

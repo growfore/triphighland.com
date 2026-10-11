@@ -178,7 +178,15 @@ export default async function TripPage({ params }: Props) {
       {/* SUMMARY BAR */}
       <div className="sticky top-14 z-20 border-b border-line-soft bg-white lg:top-16">
         <div className="wrap flex items-center gap-4 py-3 sm:gap-8">
-          <p className="display m-0 min-w-0 flex-1 truncate text-[14px] sm:text-base">{trip.title}</p>
+          <div className="min-w-0 flex-1">
+            <p className="display m-0 truncate text-[14px] sm:text-base">{trip.title}</p>
+            {/* Compact price for small screens; the full one sits beside the title from sm up. */}
+            {trip.price != null && (
+              <p className="m-0 mt-0.5 truncate text-[13px] text-ink-muted sm:hidden">
+                {L.card.from} <span className="font-semibold text-ink">{formatPrice(trip.price, L.card.currency)}</span>
+              </p>
+            )}
+          </div>
           {trip.price != null && (
             <p className="m-0 hidden flex-none text-sm text-ink-muted sm:block">
               {L.card.from}{" "}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { NavItem } from "@/lib/site";
 import { imageUrl } from "@/lib/media";
 import SearchDialog from "./search-dialog";
@@ -185,17 +185,63 @@ function NavEntry({ item }: { item: NavItem }) {
       </Link>
     );
   }
+  return <NavDropdown item={item} />;
+}
+
+// State-driven rather than :hover/:focus-within: after a client navigation the
+// clicked link keeps focus and the pointer stays put, which kept a CSS-only
+// panel open on the new page.
+function NavDropdown({ item }: { item: NavItem }) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const triggerRef = useRef<HTMLAnchorElement>(null);
+  const show = () => {
+    clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  // Short grace period so a diagonal move toward the panel doesn't close it.
+  const hide = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
   return (
-    <div className="group relative">
+    <div
+      className="relative"
+      onPointerEnter={show}
+      onPointerLeave={hide}
+      onFocus={show}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
+      onClick={(e) => {
+        const link = (e.target as HTMLElement).closest("a");
+        if (link) {
+          setOpen(false);
+          link.blur();
+        }
+      }}
+    >
       <Link
+        ref={triggerRef}
         href={item.url || "#"}
         className="flex items-center gap-1.5 py-2 hover:opacity-75"
         aria-haspopup="true"
+        aria-expanded={open}
       >
         {item.label}
-        <ChevronDownIcon strokeWidth={1.8} size={14} />
+        <ChevronDownIcon strokeWidth={1.8} size={14} className={`transition ${open ? "rotate-180" : ""}`} />
       </Link>
-      <div className="invisible absolute left-0 top-full z-40 min-w-[280px] translate-y-1 opacity-0 transition group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      <div
+        className={`absolute left-0 top-full z-40 min-w-[280px] transition ${
+          open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-1 opacity-0"
+        }`}
+      >
         <div className="flex gap-10 rounded-[4px] bg-white p-7 text-left normal-case tracking-normal text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.45)]">
           {item.children.map((group) => (
             <div key={group.id} className="min-w-[180px]">

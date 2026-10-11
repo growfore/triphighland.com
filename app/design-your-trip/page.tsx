@@ -49,6 +49,7 @@ import {
 import { useSiteContact } from "@/components/site/use-site-contact";
 import Photo from "@/components/site/photo";
 import { SpamTrap, useSpamCheck } from "@/components/site/spam-trap";
+import { sendErrorMessage } from "@/components/site/enquiry-form";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -283,7 +284,7 @@ export function ItineraryForm_Component() {
   const siteConfig = useSiteContact();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | false>(false);
   const formRef = useRef<HTMLFormElement>(null);
   const looksAutomated = useSpamCheck();
   const [step, setStep] = useState(0);
@@ -421,15 +422,17 @@ export function ItineraryForm_Component() {
         }),
         cache: "no-store",
       });
-      if (!res.ok) throw new Error(`Email send failed: ${res.status}`);
+      if (!res.ok) {
+        setSubmitError((await sendErrorMessage(res)) ?? "Something went wrong sending your request. Please try again.");
+        return;
+      }
 
       setSubmitSuccess(true);
       form.reset();
       setStep(0);
       setTimeout(() => setSubmitSuccess(false), 6000);
-    } catch (error) {
-      console.error("Form submission error:", error);
-      setSubmitError(true);
+    } catch {
+      setSubmitError("Something went wrong sending your request. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1174,8 +1177,8 @@ export function ItineraryForm_Component() {
 
               {submitError && (
                 <div role="alert" className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  Something went wrong sending your request. Please try again
-                  {siteConfig.phoneNumber ? ` or call us on ${siteConfig.phoneNumber}` : ""}.
+                  {submitError}
+                  {siteConfig.phoneNumber ? ` You can also call us on ${siteConfig.phoneNumber}.` : ""}
                 </div>
               )}
 

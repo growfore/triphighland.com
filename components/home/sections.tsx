@@ -513,7 +513,11 @@ export function Testimonials({ ctx }: { ctx: HomeCtx }) {
                     rel="noopener noreferrer"
                     className="group flex items-center gap-4 border border-line px-5 py-3 transition-colors hover:border-ink"
                   >
-                    <span className="font-semibold">{p.name}</span>
+                    <span className="flex items-center gap-2.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- tiny local SVG */}
+                      <img src={p.logo} alt="" width={22} height={22} className="size-[22px]" />
+                      <span className="font-semibold">{p.name}</span>
+                    </span>
                     <span className="flex items-center gap-2">
                       <span className="text-[15px] font-semibold">{p.rating.toFixed(1)}</span>
                       <Stars rating={p.rating} size={14} className="text-highland-deep" />
@@ -538,9 +542,9 @@ const TESTIMONIAL_RAIL = 6;
 function reviewPlatforms(config: SiteConfig) {
   const r = config.reviews;
   return [
-    { name: "Google", ...r?.googleReview },
-    { name: "Tripadvisor", ...r?.tripadvisor },
-  ].filter((p): p is { name: string; link: string; count: number; rating: number } =>
+    { name: "Google", logo: "/logos/google.svg", ...r?.googleReview },
+    { name: "Tripadvisor", logo: "/logos/tripadvisor.svg", ...r?.tripadvisor },
+  ].filter((p): p is { name: string; logo: string; link: string; count: number; rating: number } =>
     typeof p.link === "string" && /^https?:\/\/[^\s]+$/.test(p.link) && Number(p.count) > 0 && Number.isFinite(Number(p.rating)),
   );
 }
@@ -552,21 +556,30 @@ export function Journal({ ctx }: { ctx: HomeCtx }) {
   if (!ctx.blogs.length) return null;
   return (
     <section id="journal" className="bg-stone">
-      <div className="wrap py-16 lg:py-32">
-        <Heading
-          copy={copy}
-          fallback={<>The trail <em>journal</em></>}
-          aside={
-            <Link href="/blog" className="inline-flex items-center gap-2 font-medium underline-offset-[6px] hover:underline">
-              {copy?.allArticles || "All stories"} <ArrowRightIcon size={16} strokeWidth={1.8} />
-            </Link>
-          }
-        />
-        <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {ctx.blogs.map((b) => (
-            <BlogCard key={b.id} blog={b} />
-          ))}
-        </div>
+      <div className="py-16 lg:py-32">
+        <ScrollRail>
+          <div className="wrap">
+            <Heading
+              copy={copy}
+              fallback={<>The trail <em>journal</em></>}
+              aside={
+                <div className="flex items-center gap-6">
+                  <Link href="/blog" className="inline-flex items-center gap-2 font-medium underline-offset-[6px] hover:underline">
+                    {copy?.allArticles || "All stories"} <ArrowRightIcon size={16} strokeWidth={1.8} />
+                  </Link>
+                  <RailControls />
+                </div>
+              }
+            />
+          </div>
+          <RailTrack label={copy?.title || "Journal"}>
+            {ctx.blogs.map((b) => (
+              <div key={b.id} className="w-[82vw] flex-none snap-start sm:w-[340px] xl:w-[360px]">
+                <BlogCard blog={b} />
+              </div>
+            ))}
+          </RailTrack>
+        </ScrollRail>
       </div>
     </section>
   );

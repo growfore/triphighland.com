@@ -152,6 +152,13 @@ function AddonPicker({ options, defaultChecked, currency }: { options: AddonOpti
   );
 }
 
+// The API explains why a send failed (e.g. the site's contact email in
+// TripEleven is invalid); fall back to nothing when it doesn't.
+export async function sendErrorMessage(res: Response): Promise<string | undefined> {
+  const body = (await res.json().catch(() => null)) as { message?: unknown } | null;
+  return typeof body?.message === "string" && body.message.trim() ? body.message : undefined;
+}
+
 // Posts to the same-origin proxy (/api/email/send). TripEleven ignores any
 // recipient in the body and delivers to the tenant's own address.
 export default function EnquiryForm({
@@ -168,6 +175,7 @@ export default function EnquiryForm({
   labels,
 }: Props) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>();
   const looksAutomated = useSpamCheck();
   const [addonOptions, setAddonOptions] = useState<AddonOption[]>(addons ?? []);
   const latestJourney = useRef(defaultTrip);
@@ -228,6 +236,7 @@ export default function EnquiryForm({
     const escape = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
     setState("sending");
+    setErrorMessage(undefined);
     try {
       const res = await fetch("/api/email/send", {
         method: "POST",
@@ -242,6 +251,7 @@ export default function EnquiryForm({
             .join("")}</table>`,
         }),
       });
+      if (!res.ok) setErrorMessage(await sendErrorMessage(res));
       setState(res.ok ? "done" : "error");
     } catch {
       setState("error");
@@ -332,7 +342,8 @@ export default function EnquiryForm({
       </div>
       {state === "error" && (
         <p role="alert" className="text-sm text-[#F2A08F] sm:col-span-2">
-          Something went wrong sending your enquiry. Please try again{whatsapp ? " or message us on WhatsApp" : ""}.
+          {errorMessage ?? "Something went wrong sending your enquiry. Please try again."}
+          {whatsapp ? " You can also message us on WhatsApp." : ""}
         </p>
       )}
     </form>
