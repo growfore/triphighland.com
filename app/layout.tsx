@@ -15,15 +15,19 @@ import { WhatsAppIcon } from "@/components/site/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
+  const { seo } = config;
+  const image = seo.image || config.image;
+  const favicon = seo.favicon || config.logo;
   return {
     metadataBase: new URL(siteUrl(config)),
-    title: { default: config.name, template: `%s · ${config.name}` },
-    description: config.description,
+    title: { default: seo.title || config.name, template: `%s · ${config.name}` },
+    description: seo.description || config.description,
     openGraph: {
       siteName: config.name,
-      images: config.image ? [{ url: imageUrl(config.image) }] : undefined,
+      images: image ? [{ url: imageUrl(image) }] : undefined,
     },
-    icons: config.logo ? { icon: imageUrl(config.logo) } : undefined,
+    twitter: { card: image ? "summary_large_image" : "summary" },
+    icons: favicon ? { icon: imageUrl(favicon) } : undefined,
   };
 }
 

@@ -51,6 +51,9 @@ export type SiteConfig = {
   established?: string;
   fullAddress?: string;
   socials: Record<string, string>;
+  // Dashboard SEO settings; the site-wide fallbacks for <title>, description,
+  // share image and favicon.
+  seo: { title?: string; description?: string; image?: string; favicon?: string };
   reviews?: {
     googleReview?: { count: number; rating: number; link: string };
     tripadvisor?: { count: number; rating: number; link: string };
@@ -96,6 +99,12 @@ export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
     established: c.established || undefined,
     fullAddress: c.fullAddress || undefined,
     socials: c.socials ?? {},
+    seo: {
+      title: c.seo?.title?.trim() || undefined,
+      description: c.seo?.description?.trim() || undefined,
+      image: c.seo?.image || undefined,
+      favicon: c.seo?.favicon || undefined,
+    },
     reviews: c.reviews,
     documents: Array.isArray(c.documents) ? c.documents : [],
     associations: c.associations,

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import {
   getBlogs,
@@ -14,7 +15,7 @@ import {
   tripsForSpec,
 } from "@/lib/site";
 import { getLabels } from "@/lib/labels";
-import { whatsappLink } from "@/lib/media";
+import { imageUrl, whatsappLink } from "@/lib/media";
 import {
   CategoryTiles,
   CustomSection,
@@ -33,6 +34,30 @@ import {
 } from "@/components/home/sections";
 
 export const revalidate = 300;
+
+// The dashboard's SEO title is the whole homepage title, without the
+// "· Site name" suffix other pages get.
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  const { seo } = config;
+  const title = seo.title || config.name;
+  const description = seo.description || config.description;
+  const image = seo.image || config.image;
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      url: "/",
+      title,
+      description,
+      siteName: config.name,
+      images: image ? [{ url: imageUrl(image) }] : undefined,
+    },
+    twitter: { card: image ? "summary_large_image" : "summary", title, description },
+  };
+}
 
 // Used only when the dashboard has never saved a section order. No newsletter:
 // the footer carries the signup on every page.
