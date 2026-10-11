@@ -275,9 +275,11 @@ export const getFeaturedGroups = cache(async (): Promise<FeaturedGroup[]> => {
 
 export type Testimonial = { id: string; author: string; content: string; rating: number; media?: string; createdAt: string };
 
-export const getTestimonials = cache(async (): Promise<Testimonial[]> => {
-  const body = await getJson<{ data?: Testimonial[] }>("/testimonial?page=1&limit=12");
-  return body?.data ?? [];
+// `total` is the API's count of every published testimonial, not just this page.
+export const getTestimonials = cache(async (): Promise<{ testimonials: Testimonial[]; total: number }> => {
+  const body = await getJson<{ data?: Testimonial[]; pagination?: { total?: number } }>("/testimonial?page=1&limit=50");
+  const testimonials = body?.data ?? [];
+  return { testimonials, total: body?.pagination?.total ?? testimonials.length };
 });
 
 export type TeamMember = {

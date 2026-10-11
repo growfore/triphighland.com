@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import type { NavItem } from "@/lib/site";
 import { imageUrl } from "@/lib/media";
 import SearchDialog from "./search-dialog";
-import { WhatsAppIcon, ChevronDown, CloseIcon, MenuIcon, SearchIcon } from "./icons";
+import MegaMenu, { MobileMegaMenu, isMega, type MenuTrip } from "./mega-menu";
+import { ChevronDownIcon, MenuIcon, SearchIcon, XIcon } from "lucide-react";
+import { WhatsAppIcon } from "./icons";
 
 export type HeaderLabels = {
   bookNow: string;
@@ -20,6 +22,7 @@ type Props = {
   logo?: string;
   showName: boolean;
   items: NavItem[];
+  trips: Record<string, MenuTrip>;
   whatsapp: string;
   labels: HeaderLabels;
 };
@@ -38,7 +41,7 @@ function Brand({ name, logo, showName, className }: { name: string; logo?: strin
 }
 
 // White bar with ruled cells (the design's sub-page navbar), used site-wide.
-export default function HeaderClient({ name, logo, showName, items, whatsapp, labels }: Props) {
+export default function HeaderClient({ name, logo, showName, items, trips, whatsapp, labels }: Props) {
   const pathname = usePathname();
   // Remember which path the menu was opened on, so navigating closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
@@ -57,7 +60,7 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-line-soft bg-white text-ink">
+      <header className="sticky top-0 z-30 bg-white text-ink">
         <div className="flex h-14 items-stretch lg:h-16">
           <Brand
             name={name}
@@ -70,9 +73,9 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
             aria-label="Primary"
             className="hidden flex-1 items-center gap-8 px-8 text-[13px] font-medium uppercase tracking-[0.04em] lg:flex"
           >
-            {items.map((item) => (
-              <NavEntry key={item.id} item={item} />
-            ))}
+            {items.map((item) =>
+              isMega(item) ? <MegaMenu key={item.id} item={item} trips={trips} /> : <NavEntry key={item.id} item={item} />,
+            )}
           </nav>
 
           <div className="ml-auto hidden items-stretch lg:flex">
@@ -84,7 +87,7 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
               onClick={() => setSearchOpen(!searchOpen)}
               className={`flex w-16 items-center justify-center border-l border-line-soft hover:bg-paper`}
             >
-              <SearchIcon />
+              <SearchIcon size={20} strokeWidth={1.8} />
             </button>
             {whatsapp && (
               <a
@@ -99,6 +102,7 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
             )}
             <Link
               href="/booking"
+              data-enquire
               className="flex items-center bg-highland-deep px-6 text-[13px] font-medium uppercase tracking-[0.04em] text-white hover:bg-[#255a88]"
             >
               {labels.bookNow}
@@ -113,7 +117,7 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
             onClick={() => setSearchOpen(!searchOpen)}
             className="ml-auto flex w-14 items-center justify-center border-l border-line-soft lg:hidden"
           >
-            <SearchIcon size={18} />
+            <SearchIcon strokeWidth={1.8} size={18} />
           </button>
           <button
             type="button"
@@ -122,7 +126,7 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
             onClick={() => setOpen(true)}
             className="flex w-14 items-center justify-center border-l border-line-soft lg:hidden"
           >
-            <MenuIcon />
+            <MenuIcon size={20} strokeWidth={1.8} />
           </button>
         </div>
 
@@ -145,15 +149,19 @@ export default function HeaderClient({ name, logo, showName, items, whatsapp, la
               onClick={() => setOpen(false)}
               className="flex size-11 items-center justify-center rounded-full border border-white/40"
             >
-              <CloseIcon />
+              <XIcon size={20} strokeWidth={1.8} />
             </button>
           </div>
           <nav aria-label="Mobile" className="flex flex-1 flex-col px-4 pb-10">
-            {items.map((item) => (
-              <MobileEntry key={item.id} item={item} />
-            ))}
+            {items.map((item) =>
+              isMega(item) ? (
+                <MobileMegaMenu key={item.id} item={item} trips={trips} />
+              ) : (
+                <MobileEntry key={item.id} item={item} />
+              ),
+            )}
             <div className="mt-auto flex flex-col gap-3 pt-10">
-              <Link href="/booking" className="btn-primary">
+              <Link href="/booking" data-enquire onClick={() => setOpen(false)} className="btn-primary">
                 {labels.bookNow}
               </Link>
               {whatsapp && (
@@ -186,7 +194,7 @@ function NavEntry({ item }: { item: NavItem }) {
         aria-haspopup="true"
       >
         {item.label}
-        <ChevronDown size={14} />
+        <ChevronDownIcon strokeWidth={1.8} size={14} />
       </Link>
       <div className="invisible absolute left-0 top-full z-40 min-w-[280px] translate-y-1 opacity-0 transition group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
         <div className="flex gap-10 rounded-[4px] bg-white p-7 text-left normal-case tracking-normal text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.45)]">
@@ -229,7 +237,7 @@ function MobileEntry({ item }: { item: NavItem }) {
     <details className="group border-b border-white/15">
       <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-xl font-semibold uppercase">
         {item.label}
-        <ChevronDown className="transition group-open:rotate-180" />
+        <ChevronDownIcon size={20} strokeWidth={1.8} className="transition group-open:rotate-180" />
       </summary>
       <div className="flex flex-col gap-5 pb-6">
         <Link href={item.url || "#"} className="text-night-muted underline underline-offset-4">

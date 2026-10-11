@@ -1,24 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCities, getCountries, getSiteConfig, getTeam, getTrip, getTrips } from "@/lib/site";
-import { formatAltitude, formatGrade, formatPrice, imageUrl, stripHtml, whatsappLink } from "@/lib/media";
+import { getCities, getCountries, getSiteConfig, getTrip, getTrips } from "@/lib/site";
+import { formatAltitude, formatGrade, formatPrice, imageUrl, stripHtml } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import { plainContent, richContent } from "@/lib/rich-content";
 import Photo from "@/components/site/photo";
 import TripCard from "@/components/site/trip-card";
-import EnquiryForm from "@/components/site/enquiry-form";
-import {
-  CheckIcon,
-  ChevronDown,
-  ChevronRight,
-  ClockIcon,
-  CloseIcon,
-  MountainIcon,
-  PinIcon,
-  SlidersIcon,
-  UserIcon,
-} from "@/components/site/icons";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, MapPinIcon, MountainIcon, SlidersHorizontalIcon, UserIcon, XIcon } from "lucide-react";
 import GalleryCarousel from "@/components/trip/gallery-carousel";
 import DayAccordion from "@/components/trip/day-accordion";
 import OverviewMore from "@/components/trip/overview-more";
@@ -49,18 +38,15 @@ export default async function TripPage({ params }: Props) {
   const trip = await getTrip(slug);
   if (!trip) notFound();
 
-  const [config, countries, cities, { trips }, team] = await Promise.all([
+  const [config, countries, cities, { trips }] = await Promise.all([
     getSiteConfig(),
     getCountries(),
     getCities(),
     getTrips({ limit: 12 }),
-    getTeam(),
   ]);
   const country = countries.find((c) => c.id === trip.countryId);
   const city = cities.find((c) => c.id === trip.cityId);
   const related = trips.filter((t) => t.slug !== trip.slug).slice(0, 3);
-  const guide = team.flatMap((d) => d.members).find((m) => m.image) ?? team[0]?.members[0];
-  const whatsapp = whatsappLink(config.whatsAppNumber, trip.title);
   const L = getLabels(config.content);
   const overviewText = plainContent(trip.overview);
 
@@ -69,17 +55,18 @@ export default async function TripPage({ params }: Props) {
     ...trip.itinerary.flatMap((d) => (d.dayFeaturedImages ?? []).map((f) => ({ src: f.image, caption: f.title }))),
   ].filter((s, i, all) => s.src && all.findIndex((x) => x.src === s.src) === i);
 
-  const facts: { k: string; v?: string | null; Icon: typeof PinIcon }[] = [
-    { k: L.trip.startPoint, v: trip.meetingPoint || city?.cityName || country?.countryName, Icon: PinIcon },
+  const facts: { k: string; v?: string | null; Icon: typeof MapPinIcon }[] = [
+    { k: L.trip.startPoint, v: trip.meetingPoint || city?.cityName || country?.countryName, Icon: MapPinIcon },
     { k: L.trip.duration, v: trip.duration, Icon: ClockIcon },
     { k: L.trip.maxAltitude, v: formatAltitude(trip.maximumAltitude), Icon: MountainIcon },
-    { k: L.trip.difficulty, v: formatGrade(trip.difficultyLevel), Icon: SlidersIcon },
+    { k: L.trip.difficulty, v: formatGrade(trip.difficultyLevel), Icon: SlidersHorizontalIcon },
     { k: L.trip.groupSize, v: trip.guestCapacity ? String(trip.guestCapacity) : undefined, Icon: UserIcon },
   ];
-  const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof PinIcon } => Boolean(x.v));
+  const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof MapPinIcon } => Boolean(x.v));
 
   return (
-    <main>
+    // Read by the site-wide enquiry sheet to pre-fill this trip.
+    <main data-enquiry-trip={trip.title}>
       {/* SPLIT HERO */}
       <section className="flex flex-wrap bg-night text-white">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col px-4 pb-12 pt-8 sm:px-[clamp(20px,4vw,64px)] lg:min-h-[720px] lg:pb-18 lg:pt-16">
@@ -89,7 +76,7 @@ export default async function TripPage({ params }: Props) {
             </Link>
             {country && (
               <>
-                <ChevronRight size={14} className="text-white/40" />
+                <ChevronRightIcon strokeWidth={2} size={14} className="text-white/40" />
                 <Link href={`/explore?country=${country.countryHandle}`} className="transition-colors hover:text-white">
                   {country.countryName}
                 </Link>
@@ -97,7 +84,7 @@ export default async function TripPage({ params }: Props) {
             )}
             {city && (
               <>
-                <ChevronRight size={14} className="text-white/40" />
+                <ChevronRightIcon strokeWidth={2} size={14} className="text-white/40" />
                 <Link href={`/explore?city=${city.cityHandle}`} className="transition-colors hover:text-white">
                   {city.cityName}
                 </Link>
@@ -195,7 +182,7 @@ export default async function TripPage({ params }: Props) {
               <ul className="mt-6 flex max-w-[860px] flex-col">
                 {trip.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
-                    <CheckIcon size={20} className="mt-1 flex-none text-highland-deep" />
+                    <CheckIcon strokeWidth={2} size={20} className="mt-1 flex-none text-highland-deep" />
                     {item}
                   </li>
                 ))}
@@ -208,7 +195,7 @@ export default async function TripPage({ params }: Props) {
               <ul className="mt-6 flex max-w-[860px] flex-col">
                 {trip.exclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
-                    <CloseIcon size={20} className="mt-1 flex-none text-ink-muted" />
+                    <XIcon strokeWidth={1.8} size={20} className="mt-1 flex-none text-ink-muted" />
                     {item}
                   </li>
                 ))}
@@ -246,44 +233,6 @@ export default async function TripPage({ params }: Props) {
         </section>
       )}
 
-      {/* ENQUIRE */}
-      <section id="enquire" className="scroll-mt-32 bg-night text-white">
-        <div className="wrap flex flex-wrap items-start gap-x-24 gap-y-12 py-16 lg:py-25">
-          <div className="min-w-0 flex-[1_1_440px]">
-            {config.content.pageHeaders?.booking?.eyebrow && (
-              <p className="meta mb-4 text-[12px] text-night-muted">{config.content.pageHeaders.booking.eyebrow}</p>
-            )}
-            <h2 className="display text-[26px] sm:text-[clamp(26px,2.3vw,34px)]">
-              {config.content.pageHeaders?.booking?.title || L.trip.talkToExpert}
-            </h2>
-            {config.content.pageHeaders?.booking?.subtitle && (
-              <p className="mt-5 max-w-[460px] text-base font-light text-[#DCE5EE] sm:text-[17px]">{config.content.pageHeaders.booking.subtitle}</p>
-            )}
-            {guide && (
-              <div className="mt-9 flex items-center gap-4">
-                <div className="relative flex size-16 flex-none items-center justify-center overflow-hidden rounded-full bg-night-raised text-night-muted">
-                  {guide.image ? <Photo src={guide.image} alt="" sizes="64px" /> : <UserIcon size={26} />}
-                </div>
-                <div>
-                  <div className="font-medium">{guide.name}</div>
-                  {guide.designation && <div className="text-[14px] text-night-muted">{guide.designation}</div>}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="min-w-0 flex-[1_1_520px]">
-            <EnquiryForm
-              variant="trip"
-              trips={[trip.title]}
-              defaultTrip={trip.title}
-              whatsapp={whatsapp}
-              labels={L.trip}
-              submitClassName="btn meta bg-highland px-8 py-5 text-[14px] tracking-[0.1em] text-[#0E1F2E] hover:bg-[#6fa5d4] disabled:opacity-60"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* RELATED */}
       {related.length > 0 && (
         <section className="wrap py-16 lg:py-28">
@@ -306,7 +255,7 @@ function AccordionRow({ title, html }: { title: string; html: string }) {
       <summary className="flex cursor-pointer list-none items-center gap-4 py-5 transition-colors hover:bg-[#E4E1D8] sm:py-6 [&::-webkit-details-marker]:hidden">
         <span className="flex-1 text-base font-light uppercase leading-tight sm:text-[clamp(17px,1.5vw,22px)]">{title}</span>
         <span className="flex size-11 flex-none items-center justify-center transition-transform group-open:rotate-180">
-          <ChevronDown size={26} strokeWidth={1.6} />
+          <ChevronDownIcon size={26} strokeWidth={1.6} />
         </span>
       </summary>
       <div className="rich max-w-[860px] pb-8 pt-1" dangerouslySetInnerHTML={{ __html: html }} />

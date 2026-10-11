@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-sans: var(--font-outfit);
+    --font-sans: var(--font-inter-tight);
+    --font-display: var(--font-montserrat);
     --font-mono: var(--font-plex-mono);
 
     /* Editorial palette (design style tile) */
@@ -104,7 +105,17 @@
         font-size: 16px;
         line-height: 1.55;
     }
-    /* Emphasis is weight contrast, not italics: Outfit has no italic. */
+    /* Headings: Montserrat Bold. Classes below add the uppercase. */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-display);
+        font-weight: 700;
+    }
+    /* Emphasis is weight contrast, not italics (matches the heading style). */
     em {
         font-style: normal;
         font-weight: 300;
@@ -124,20 +135,23 @@
         padding-inline: clamp(16px, 4vw, 64px);
     }
     .display {
-        font-weight: 600;
+        font-family: var(--font-display);
+        font-weight: 700;
         line-height: 1.12;
         letter-spacing: 0.005em;
         text-transform: uppercase;
     }
     .h-section {
-        font-weight: 600;
+        font-family: var(--font-display);
+        font-weight: 700;
         line-height: 1.12;
         letter-spacing: 0.005em;
         text-transform: uppercase;
         font-size: clamp(24px, 2.4vw, 36px);
     }
     .h-sub {
-        font-weight: 600;
+        font-family: var(--font-display);
+        font-weight: 700;
         line-height: 1.12;
         letter-spacing: 0.005em;
         text-transform: uppercase;
@@ -289,7 +303,8 @@
     .rich h2,
     .rich h3,
     .rich h4 {
-        font-weight: 600;
+        font-family: var(--font-display);
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.01em;
         line-height: 1.15;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlog } from "@/lib/site";
@@ -43,8 +44,8 @@ export default async function BlogPost({ params }: Props) {
         html={blog.content}
         toc
         aside={
-          <Link href="/blog" className="font-medium underline-offset-[6px] hover:underline">
-            ← All stories
+          <Link href="/blog" className="inline-flex items-center gap-2 font-medium underline-offset-[6px] hover:underline">
+            <ArrowLeftIcon size={16} strokeWidth={1.8} /> All stories
           </Link>
         }
       />

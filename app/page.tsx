@@ -39,7 +39,7 @@ export const revalidate = 300;
 const DEFAULT_ORDER = ["whyUs", "categoryTiles", "tripOfMonth", "featured", "featuredRail", "testimonials", "blog", "newsletter"];
 
 export default async function HomePage() {
-  const [config, { trips, total }, groups, categories, countries, cities, testimonials, team, blogs, homeSections] =
+  const [config, { trips, total }, groups, categories, countries, cities, { testimonials, total: testimonialTotal }, team, blogs, homeSections] =
     await Promise.all([
       getSiteConfig(),
       getTrips({ limit: 50 }),
@@ -76,6 +76,7 @@ export default async function HomePage() {
     // Cities only; countries are not shown on the homepage.
     destinations: cities.map((c) => ({ key: `city:${c.cityHandle}`, name: c.cityName, image: c.cityImage, href: `/explore?city=${c.cityHandle}` })),
     testimonials,
+    testimonialTotal,
     guide: team.flatMap((d) => d.members).find((m) => m.image) ?? team[0]?.members[0],
     blogs,
     homeSections,
@@ -90,13 +91,17 @@ export default async function HomePage() {
   // dashboard order leaves whyUs out.
   if (!order.includes("whyUs") && !hidden.has("whyUs") && (content.home?.about?.title || content.home?.about?.copy)) order.unshift("whyUs");
   const s = content.sections ?? {};
+  // Category tiles sit right after the first featured block, whatever the
+  // dashboard order says, as long as both are shown.
+  const tilesId = order.find((id) => id === "categoryTiles" || id === "categories");
+  const tilesInFeatured = Boolean(tilesId) && order.includes("featured");
 
   const render = (id: string): ReactNode => {
     switch (id) {
       case "whyUs":
         return <WhyUs ctx={ctx} />;
       case "featured":
-        return <Featured ctx={ctx} />;
+        return <Featured ctx={ctx} afterFirst={tilesInFeatured ? <CategoryTiles ctx={ctx} /> : undefined} />;
       case "featuredRail":
         return <FeaturedRail ctx={ctx} />;
       case "categories":
@@ -124,7 +129,7 @@ export default async function HomePage() {
   return (
     <main>
       <Hero ctx={ctx} />
-      {order.map((id) => (
+      {order.filter((id) => !(tilesInFeatured && id === tilesId)).map((id) => (
         <div key={id} data-section={id}>
           {render(id)}
         </div>

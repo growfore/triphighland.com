@@ -40,9 +40,12 @@ export default async function Article({
   html,
   aside,
   toc: showToc = false,
+  enquiry = true,
 }: {
   html: string;
   aside?: ReactNode;
+  // Sidebar booking CTA; static info pages turn it off.
+  enquiry?: boolean;
   // Show a table of contents (from h2/h3) above the CTA in the sidebar.
   toc?: boolean;
 }) {
@@ -72,8 +75,10 @@ export default async function Article({
   const rendered = parts.map((p) => (p.type === "html" ? { ...p, html: withHeadingIds(richContent(p.html), used, toc) } : p));
   const booking = config.content.pageHeaders?.booking;
 
+  const hasAside = Boolean(aside) || (showToc && toc.length > 1) || enquiry;
+
   return (
-    <div className="wrap grid gap-12 py-12 lg:grid-cols-[minmax(0,760px)_1fr] lg:gap-24 lg:py-20">
+    <div className={`wrap grid gap-12 py-12 lg:gap-24 lg:py-20 ${hasAside ? "lg:grid-cols-[minmax(0,760px)_1fr]" : "max-w-[888px]"}`}>
       <article className="min-w-0">
         {rendered.map((p, i) =>
           p.type === "html" ? (
@@ -87,10 +92,11 @@ export default async function Article({
           ),
         )}
       </article>
-      <aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
-        {aside}
-        {showToc && toc.length > 1 && <Toc items={toc} />}
-        {booking?.title || booking?.subtitle ? (
+      {hasAside && (
+        <aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
+          {aside}
+          {showToc && toc.length > 1 && <Toc items={toc} />}
+          {!enquiry ? null : booking?.title || booking?.subtitle ? (
           <div className="rounded-[4px] bg-night p-8 text-paper">
             {booking.title && <p className="display text-xl">{booking.title}</p>}
             {booking.subtitle && <p className="mt-3 font-light text-night-muted">{booking.subtitle}</p>}
@@ -103,7 +109,8 @@ export default async function Article({
             {labels.trip.bookNow}
           </Link>
         )}
-      </aside>
+        </aside>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Labels } from "@/lib/labels";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WhatsAppIcon } from "./icons";
 
 type Props = {
@@ -19,6 +20,31 @@ function seasons(): string[] {
   return [year, year + 1].flatMap((y) => [`Spring ${y}`, `Summer ${y}`, `Autumn ${y}`, `Winter ${y}`]);
 }
 
+// shadcn Select styled as the form's underlined dark field. Radix renders a
+// hidden native <select name> alongside, so FormData still picks the value up.
+function FieldSelect({ name, defaultValue, options }: { name: string; defaultValue: string; options: string[] }) {
+  return (
+    <Select name={name} defaultValue={defaultValue}>
+      <SelectTrigger className="h-auto w-full rounded-none border-0 border-b border-paper/50 bg-transparent px-0 py-2 text-base text-paper shadow-none focus-visible:border-highland focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent [&_svg:not([class*='text-'])]:text-paper">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent
+        position="popper"
+        className="max-h-72 rounded-[4px] border-white/15 bg-night text-paper"
+      >
+        {options.map((o) => (
+          <SelectItem key={o} value={o} className="py-2 text-[15px] focus:bg-white/10 focus:text-paper [&_svg:not([class*='text-'])]:text-highland">
+            {o}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const HELP_ME_CHOOSE = "Help me choose";
+const NOT_SURE = "Not sure yet";
+
 // Posts to the same-origin proxy (/api/email/send). TripEleven ignores any
 // recipient in the body and delivers to the tenant's own address.
 export default function EnquiryForm({ trips, defaultTrip, whatsapp, variant = "plan", submitClassName, labels }: Props) {
@@ -27,13 +53,13 @@ export default function EnquiryForm({ trips, defaultTrip, whatsapp, variant = "p
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
-    const journey = data.journey || defaultTrip || "Help me choose";
+    const journey = data.journey || defaultTrip || HELP_ME_CHOOSE;
     const rows: [string, string | undefined][] = [
       ["Name", data.name],
       ["Email", data.email],
       ["Phone", data.phone],
       ["Journey", journey],
-      ["When", data.when],
+      ["When", data.when === NOT_SURE ? undefined : data.when],
       ["Start date", data.startDate],
       ["Travellers", data.travellers],
       ["Message", data.message],
@@ -86,21 +112,15 @@ export default function EnquiryForm({ trips, defaultTrip, whatsapp, variant = "p
         <>
           <label className="field-line">
             Journey
-            <select name="journey" defaultValue={defaultTrip ?? ""}>
-              <option value="">Help me choose</option>
-              {trips.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
+            <FieldSelect
+              name="journey"
+              defaultValue={defaultTrip ?? HELP_ME_CHOOSE}
+              options={[HELP_ME_CHOOSE, ...trips.filter((t) => t !== HELP_ME_CHOOSE)]}
+            />
           </label>
           <label className="field-line">
             When
-            <select name="when" defaultValue="">
-              <option value="">Not sure yet</option>
-              {seasons().map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
+            <FieldSelect name="when" defaultValue={NOT_SURE} options={[NOT_SURE, ...seasons()]} />
           </label>
         </>
       ) : (
@@ -111,12 +131,7 @@ export default function EnquiryForm({ trips, defaultTrip, whatsapp, variant = "p
           </label>
           <label className="field-line">
             Travellers
-            <select name="travellers" defaultValue="2">
-              <option>1</option>
-              <option>2</option>
-              <option>3–5</option>
-              <option>6+</option>
-            </select>
+            <FieldSelect name="travellers" defaultValue="2" options={["1", "2", "3–5", "6+"]} />
           </label>
         </>
       )}

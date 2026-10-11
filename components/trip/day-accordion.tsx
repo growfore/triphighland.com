@@ -5,7 +5,7 @@ import type { ItineraryDay } from "@/lib/site";
 import type { Labels } from "@/lib/labels";
 import Photo from "@/components/site/photo";
 import { richContent } from "@/lib/rich-content";
-import { ChevronDown } from "@/components/site/icons";
+import { ChevronDownIcon } from "lucide-react";
 
 export default function DayAccordion({ days, labels }: { days: ItineraryDay[]; labels: Labels["trip"] }) {
   const [open, setOpen] = useState<number | null>(days[0]?.day ?? null);
@@ -47,7 +47,7 @@ export default function DayAccordion({ days, labels }: { days: ItineraryDay[]; l
               <span className="flex-none text-[19px] font-semibold uppercase leading-none lg:text-[26px]">Day {d.day}:</span>
               <span className="flex-1 text-base font-light uppercase leading-tight sm:text-[clamp(17px,1.5vw,22px)]">{d.title}</span>
               <span className={`flex size-11 flex-none items-center justify-center transition-transform ${isOpen ? "rotate-180" : ""}`}>
-                <ChevronDown size={28} strokeWidth={1.6} />
+                <ChevronDownIcon size={28} strokeWidth={1.6} />
               </span>
             </button>
             {isOpen && (

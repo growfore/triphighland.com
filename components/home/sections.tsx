@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import type {
   BlogSummary,
   Category,
@@ -19,8 +19,9 @@ import TripCard, { PriceFrom, tripMeta } from "@/components/site/trip-card";
 import HeroSlider from "@/components/home/hero-slider";
 import BlogCard from "@/components/site/blog-card";
 import EnquiryForm from "@/components/site/enquiry-form";
+import TestimonialQuote from "@/components/home/testimonial-quote";
 import NewsletterForm from "@/components/site/newsletter-form";
-import { CheckIcon } from "@/components/site/icons";
+import { ArrowRightIcon, CheckIcon, StarIcon, UserIcon } from "lucide-react";
 
 export type Destination = { key: string; name: string; image?: string; href: string };
 
@@ -33,6 +34,7 @@ export type HomeCtx = {
   categories: Category[];
   destinations: Destination[];
   testimonials: Testimonial[];
+  testimonialTotal: number;
   guide?: TeamMember;
   blogs: BlogSummary[];
   homeSections: HomeSection[];
@@ -141,10 +143,10 @@ export function WhyUs({ ctx }: { ctx: HomeCtx }) {
         )}
 
         {points.length > 0 && (
-          <ul className="mt-8 flex max-w-[580px] flex-col border-b border-line">
+          <ul className="mt-8 flex max-w-[580px] flex-col">
             {points.map((p) => (
-              <li key={p} className="flex items-start gap-3 border-t border-line py-3.5 text-[15px]">
-                <CheckIcon size={20} className="mt-0.5 flex-none text-highland-deep" />
+              <li key={p} className="flex items-start gap-3 py-2 text-[15px]">
+                <CheckIcon strokeWidth={2} size={20} className="mt-0.5 flex-none text-highland-deep" />
                 {p}
               </li>
             ))}
@@ -177,34 +179,40 @@ export const FEATURED_TAG_SECTIONS = 3;
 
 // One section per featured tag (first three that have trips), alternating
 // paper / stone backgrounds. Title and description come from the tag itself.
-export function Featured({ ctx }: { ctx: HomeCtx }) {
+// `afterFirst` is slotted in after the first featured block (the homepage puts
+// the category tiles there); it still renders when there are no featured trips.
+export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: ReactNode }) {
   const bySlug = new Map(ctx.trips.map((t) => [t.slug, t]));
   const sections = ctx.groups
     .map((g) => ({ ...g, trips: g.tripSlugs.map((s) => bySlug.get(s)).filter((t): t is TripSummary => Boolean(t)) }))
     .filter((g) => g.trips.length)
     .slice(0, FEATURED_TAG_SECTIONS);
-  if (!sections.length) return null;
+  if (!sections.length) return afterFirst ?? null;
 
   return (
     <>
       {sections.map((g, i) => (
-        <section key={g.slug} id={`featured-${g.slug}`} className={i % 2 ? "bg-stone" : ""}>
-          <div className="wrap py-16 lg:py-24">
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
-              <div className="max-w-[760px]">
-                <h2 className="h-section">{g.label}</h2>
-                {g.description && <p className="standfirst mt-4">{plainContent(g.description)}</p>}
+        <Fragment key={g.slug}>
+          {/* Alternate backgrounds, counting the stone category tiles as one band. */}
+          <section id={`featured-${g.slug}`} className={(i + (afterFirst && i > 0 ? 1 : 0)) % 2 ? "bg-stone" : ""}>
+            <div className="wrap py-16 lg:py-24">
+              <div className="mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
+                <div className="max-w-[760px]">
+                  <h2 className="h-section">{g.label}</h2>
+                  {g.description && <p className="standfirst mt-4">{plainContent(g.description)}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {g.trips.map((t) => (
+                  <div key={t.id} className="flex">
+                    <TripCard trip={t} labels={ctx.labels.card} />
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {g.trips.map((t) => (
-                <div key={t.id} className="flex">
-                  <TripCard trip={t} labels={ctx.labels.card} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
+          {i === 0 && afterFirst}
+        </Fragment>
       ))}
     </>
   );
@@ -234,8 +242,8 @@ export function TripRail({
             copy={copy}
             fallback=""
             aside={
-              <Link href="/explore" className="font-medium underline-offset-[6px] hover:underline">
-                {cta || "Explore all"} →
+              <Link href="/explore" className="inline-flex items-center gap-2 font-medium underline-offset-[6px] hover:underline">
+                {cta || "Explore all"} <ArrowRightIcon size={16} strokeWidth={1.8} />
               </Link>
             }
           />
@@ -278,7 +286,7 @@ export function CategoryTiles({ ctx }: { ctx: HomeCtx }) {
             <Link
               key={c.id}
               href={`/explore?category=${encodeURIComponent(c.categoryHandle)}`}
-              className="ht-tile relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-[4px] text-white"
+              className="ht-tile relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-[4px] text-white"
             >
               <Photo src={c.categoryImage} alt="" sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,0)_45%,rgba(14,12,10,.78)_100%)]" />
@@ -303,7 +311,7 @@ export function Destinations({ ctx, copy }: { ctx: HomeCtx; copy?: SectionCopy }
       <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {ctx.destinations.slice(0, 6).map((d) => (
           <Link key={d.key} href={d.href} className="ht-card">
-            <div className="relative aspect-[4/3] overflow-hidden">
+            <div className="relative aspect-[4/5] overflow-hidden">
               <Photo src={d.image} alt={d.name} sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
             </div>
             <h3 className="display mt-5 text-base">{d.name}</h3>
@@ -375,57 +383,101 @@ export function TripOfMonth({ ctx }: { ctx: HomeCtx }) {
 
 /* ---------- Testimonials ---------- */
 
+// Five stars, filled up to the rounded rating, outlined after.
+function Stars({ rating, size = 18, className }: { rating: number; size?: number; className?: string }) {
+  const filled = Math.round(rating);
+  return (
+    <span className={`inline-flex gap-0.5 ${className ?? ""}`} role="img" aria-label={`${rating.toFixed(1)} out of 5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <StarIcon key={i} size={size} strokeWidth={1.5} fill={i < filled ? "currentColor" : "none"} className={i < filled ? "" : "opacity-40"} />
+      ))}
+    </span>
+  );
+}
+
+// "Pim V., Netherlands" → name + origin line; authors without a comma keep one line.
+function splitAuthor(author: string) {
+  const at = author.indexOf(",");
+  return at === -1 ? { name: author.trim() } : { name: author.slice(0, at).trim(), origin: author.slice(at + 1).trim() || undefined };
+}
+
+function GuestCard({ t, featured }: { t: Testimonial; featured?: boolean }) {
+  const { name, origin } = splitAuthor(t.author);
+  return (
+    <figure
+      className={`m-0 flex h-full flex-col gap-6 rounded-[4px] p-7 sm:p-9 ${
+        featured ? "bg-night text-paper lg:gap-8 lg:p-12" : "bg-stone"
+      }`}
+    >
+      <Stars rating={t.rating} size={featured ? 20 : 16} className={featured ? "text-highland" : "text-highland-deep"} />
+      <TestimonialQuote
+        text={plainContent(t.content)}
+        lines={featured ? 9 : 5}
+        className={featured ? "text-xl font-light leading-[1.4] sm:text-[26px]" : "text-[17px] font-light leading-[1.45]"}
+      />
+      <figcaption className={`mt-auto flex items-center gap-4 border-t pt-5 ${featured ? "border-white/15" : "border-line"}`}>
+        <span className={`relative flex size-12 flex-none items-center justify-center overflow-hidden rounded-full ${featured ? "bg-night-raised" : "bg-paper"}`}>
+          {t.media ? <Photo src={t.media} alt="" sizes="48px" /> : <UserIcon size={20} strokeWidth={1.8} className="opacity-60" />}
+        </span>
+        <span className="min-w-0">
+          <span className="block font-medium">{name}</span>
+          {origin && <span className={`block text-[14px] ${featured ? "text-night-muted" : "text-ink-muted"}`}>{origin}</span>}
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
 export function Testimonials({ ctx }: { ctx: HomeCtx }) {
   const copy = ctx.config.content.sections?.testimonials;
-  const r = ctx.config.reviews;
-  const rating = r?.googleReview?.count ? r.googleReview : r?.tripadvisor?.count ? r.tripadvisor : null;
-  if (!ctx.testimonials.length) return null;
+  const list = ctx.testimonials;
+  if (!list.length) return null;
+  // Summary from the guest book itself: the API's total and the average of
+  // the ratings we have (every published one up to the fetch limit).
+  const average = list.reduce((sum, t) => sum + (Number(t.rating) || 0), 0) / list.length;
+  const total = Math.max(ctx.testimonialTotal, list.length);
+  const [first, ...rest] = list;
+  const side = rest.slice(0, 2);
+  const more = rest.slice(2);
+
   return (
     <section className="wrap py-16 lg:py-32">
       <Heading
         copy={copy}
         fallback={<>From our <em>guest book</em></>}
         aside={
-          rating ? (
-            <a href={rating.link} target="_blank" rel="noopener noreferrer" className="text-right">
-              <div className="text-[35px] font-semibold leading-none">
-                {rating.rating.toFixed(1)} <span className="text-xl text-highland">★★★★★</span>
+          <div className="flex items-center gap-4 sm:text-right">
+            <div className="text-[44px] font-semibold leading-none tracking-[-0.02em]">{average.toFixed(1)}</div>
+            <div>
+              <Stars rating={average} className="text-highland-deep" />
+              <div className="mt-1 text-sm text-ink-muted">
+                {total} {total === 1 ? "guest review" : "guest reviews"}
               </div>
-              <div className="mt-1.5 text-sm text-ink-muted">{rating.count} reviews</div>
-            </a>
-          ) : undefined
+            </div>
+          </div>
         }
       />
-      <div className="grid grid-cols-1 gap-7 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
-        {ctx.testimonials.slice(0, 3).map((t) => (
-          <figure key={t.id} className="m-0 flex flex-col gap-7 rounded-[4px] bg-stone p-7 sm:p-9">
-            <div className="text-lg text-highland-deep" aria-label={`${t.rating} out of 5`}>
-              {"★".repeat(Math.round(t.rating))}
-            </div>
-            <blockquote className="m-0 text-lg font-light leading-[1.35] sm:text-[20px]">“{plainContent(t.content)}”</blockquote>
-            <figcaption className="mt-auto flex items-center gap-4 border-t border-line pt-5 font-medium">
-              {t.media && (
-                <span className="relative size-11 flex-none overflow-hidden rounded-full">
-                  <Photo src={t.media} alt="" sizes="44px" />
-                </span>
-              )}
-              {t.author}
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-      {ctx.config.associations?.items?.length ? (
-        <div className="mt-18 flex flex-wrap items-center justify-between gap-x-12 gap-y-6 border-t border-line pt-7 text-ink-muted">
-          {ctx.config.associations.title && <span className="text-[14px]">{ctx.config.associations.title}</span>}
-          <div className="flex flex-wrap items-center gap-10">
-            {ctx.config.associations.items.map((a) => (
-              <span key={a.title} className="relative h-12 w-24" title={a.title}>
-                <Photo src={a.image} alt={a.title} sizes="96px" className="!object-contain" />
-              </span>
+
+      <div className={`grid grid-cols-1 gap-6 ${side.length ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" : ""}`}>
+        <GuestCard t={first} featured />
+        {side.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-1">
+            {side.map((t) => (
+              <GuestCard key={t.id} t={t} />
             ))}
           </div>
+        )}
+      </div>
+
+      {more.length > 0 && (
+        <div className="-mx-[clamp(16px,4vw,64px)] mt-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[clamp(16px,4vw,64px)] pb-2 scrollbar-hide">
+          {more.map((t) => (
+            <div key={t.id} className="w-[82vw] flex-none snap-start sm:w-[380px]">
+              <GuestCard t={t} />
+            </div>
+          ))}
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
@@ -442,8 +494,8 @@ export function Journal({ ctx }: { ctx: HomeCtx }) {
           copy={copy}
           fallback={<>The trail <em>journal</em></>}
           aside={
-            <Link href="/blog" className="font-medium underline-offset-[6px] hover:underline">
-              {copy?.allArticles || "All stories"} →
+            <Link href="/blog" className="inline-flex items-center gap-2 font-medium underline-offset-[6px] hover:underline">
+              {copy?.allArticles || "All stories"} <ArrowRightIcon size={16} strokeWidth={1.8} />
             </Link>
           }
         />

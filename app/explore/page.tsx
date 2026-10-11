@@ -4,7 +4,7 @@ import { getCities, getCountries, getSiteConfig, getTrips } from "@/lib/site";
 import PageHeader, { PageFooterContent } from "@/components/site/page-header";
 import { getLabels } from "@/lib/labels";
 import TripCard from "@/components/site/trip-card";
-import { SearchIcon } from "@/components/site/icons";
+import { ArrowLeftIcon, ArrowRightIcon, SearchIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -127,11 +127,11 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
 
         {totalPages > 1 && (
           <nav aria-label="Pagination" className="meta mt-16 flex items-center justify-between border-t border-ink pt-6 text-[14px]">
-            {page > 1 ? <Link href={href({ page: String(page - 1) })}>← Prev</Link> : <span />}
+            {page > 1 ? <Link href={href({ page: String(page - 1) })} className="inline-flex items-center gap-2"><ArrowLeftIcon size={14} strokeWidth={1.8} /> Prev</Link> : <span />}
             <span className="text-ink-muted">
               {page} / {totalPages}
             </span>
-            {page < totalPages ? <Link href={href({ page: String(page + 1) })}>Next →</Link> : <span />}
+            {page < totalPages ? <Link href={href({ page: String(page + 1) })} className="inline-flex items-center gap-2">Next <ArrowRightIcon size={14} strokeWidth={1.8} /></Link> : <span />}
           </nav>
         )}
       </section>

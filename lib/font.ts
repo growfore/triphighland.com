@@ -1,11 +1,19 @@
-import { Outfit, IBM_Plex_Mono, Caveat } from "next/font/google";
+import { Inter_Tight, Montserrat, IBM_Plex_Mono, Caveat } from "next/font/google";
 
-// Outfit carries the whole interface; IBM Plex Mono is reserved for trip meta,
-// prices and itinerary buttons (see the design style tile).
-export const outfit = Outfit({
+// Inter Tight carries body copy and UI; Montserrat Bold sets headings (300 is
+// for the light <em> emphasis inside them). IBM Plex Mono is reserved for trip
+// meta, prices and itinerary buttons (see the design style tile).
+export const interTight = Inter_Tight({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-outfit",
+  variable: "--font-inter-tight",
+  fallback: ["system-ui", "sans-serif"],
+});
+
+export const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "700"],
+  variable: "--font-montserrat",
   fallback: ["system-ui", "sans-serif"],
 });
 

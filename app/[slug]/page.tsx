@@ -32,7 +32,7 @@ export default async function InfoPageRoute({ params }: Props) {
   return (
     <main>
       <PageHeader title={page.title} standfirst={page.metaDescription || undefined} image={page.coverImage || undefined} />
-      <Article html={page.content ?? ""} />
+      <Article html={page.content ?? ""} enquiry={false} />
     </main>
   );
 }

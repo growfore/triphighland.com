@@ -4,6 +4,7 @@ import { imageUrl, whatsappLink } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import NewsletterForm from "./newsletter-form";
 import BenefitsBand from "./benefits-band";
+import Photo from "./photo";
 
 export default async function Footer() {
   const [config, groups] = await Promise.all([getSiteConfig(), getFooterNav()]);
@@ -31,6 +32,22 @@ export default async function Footer() {
           </div>
           <NewsletterForm labels={labels.newsletter} heading={labels.newsletter.title || labels.newsletter.description} />
         </div>
+
+        {/* Associations: logos sit on light chips so full-colour marks stay legible on soot. */}
+        {config.associations?.items?.length ? (
+          <div className="mt-16 flex flex-wrap items-center justify-between gap-x-12 gap-y-6 border-t border-paper/20 pt-8 lg:mt-20">
+            {config.associations.title && <span className="text-[12px] font-medium text-soot-muted">{config.associations.title}</span>}
+            <div className="flex flex-wrap items-center gap-3">
+              {config.associations.items.map((a, i) => (
+                <span key={a.image || i} className="relative h-14 w-28 rounded-[4px] bg-paper" title={a.title}>
+                  <span className="absolute inset-2">
+                    <Photo src={a.image} alt={a.title} sizes="112px" className="!object-contain" />
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="mt-16 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-10 border-t border-paper/20 pt-8 text-[14px] lg:mt-20">
           {groups.map((group) => (

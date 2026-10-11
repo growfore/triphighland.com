@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { outfit, plexMono } from "@/lib/font";
-import { getSiteConfig } from "@/lib/site";
+import { interTight, montserrat, plexMono } from "@/lib/font";
+import { getSiteConfig, getTrips } from "@/lib/site";
+import { getLabels } from "@/lib/labels";
 import { imageUrl, whatsappLink } from "@/lib/media";
 import Header from "@/components/site/header";
 import Footer from "@/components/site/footer";
+import EnquirySheet from "@/components/site/enquiry-sheet";
 import { WhatsAppIcon } from "@/components/site/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,17 +27,25 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#15283a" };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const config = await getSiteConfig();
+  const [config, { trips }] = await Promise.all([getSiteConfig(), getTrips({ limit: 50 })]);
+  const booking = config.content.pageHeaders?.booking;
+  const tripLabels = getLabels(config.content).trip;
   const ga = config.integrations.ga?.enabled ? config.integrations.ga.id : undefined;
   const gtm = config.integrations.gtm?.enabled ? config.integrations.gtm.id : undefined;
   const whatsapp = whatsappLink(config.whatsAppNumber);
 
   return (
-    <html lang="en" className={`${outfit.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${interTight.variable} ${montserrat.variable} ${plexMono.variable}`}>
       <body>
         <Header />
         {children}
         <Footer />
+        <EnquirySheet
+          trips={trips.map((t) => t.title)}
+          whatsAppNumber={config.whatsAppNumber}
+          heading={{ eyebrow: booking?.eyebrow, title: booking?.title || tripLabels.talkToExpert, subtitle: booking?.subtitle }}
+          labels={tripLabels}
+        />
 
         {whatsapp && (
           <a

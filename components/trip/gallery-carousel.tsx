@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Photo from "@/components/site/photo";
-import { ArrowLeft, ArrowRight } from "@/components/site/icons";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 
 export type Slide = { src: string; caption?: string };
 
@@ -34,7 +34,7 @@ export default function GalleryCarousel({ slides }: { slides: Slide[] }) {
       {n > 1 && (
         <div className="wrap flex items-center justify-between gap-5 pt-5">
           <button type="button" onClick={() => setI(i - 1)} className="meta flex min-h-11 items-center gap-3 text-[14px] tracking-[0.1em]">
-            <ArrowLeft size={22} />
+            <ArrowLeftIcon strokeWidth={1.6} size={22} />
             Prev
           </button>
           <span className="text-center text-base text-ink-muted" aria-live="polite">
@@ -43,7 +43,7 @@ export default function GalleryCarousel({ slides }: { slides: Slide[] }) {
           </span>
           <button type="button" onClick={() => setI(i + 1)} className="meta flex min-h-11 items-center gap-3 text-[14px] tracking-[0.1em]">
             Next
-            <ArrowRight size={22} />
+            <ArrowRightIcon strokeWidth={1.6} size={22} />
           </button>
         </div>
       )}

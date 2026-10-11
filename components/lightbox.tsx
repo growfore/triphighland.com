@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { blurDataURL } from "@/lib/imageutil";
 
@@ -95,7 +96,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
           }}
           aria-label="Close"
         >
-          ×
+          <XIcon size={32} />
         </button>
 
         {images.length > 1 && (
@@ -118,7 +119,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
               }}
               aria-label="Previous Image"
             >
-              ‹
+              <ChevronLeftIcon size={40} />
             </button>
 
             <button
@@ -139,7 +140,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
               }}
               aria-label="Next Image"
             >
-              ›
+              <ChevronRightIcon size={40} />
             </button>
           </>
         )}

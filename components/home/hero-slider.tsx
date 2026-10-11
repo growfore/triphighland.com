@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Photo from "@/components/site/photo";
-import { ChevronDown } from "@/components/site/icons";
+import { ChevronDownIcon } from "lucide-react";
 
 export type HeroSlide = { slug: string; title: string; description?: string; image?: string };
 
@@ -49,7 +49,7 @@ export default function HeroSlider({
         {eyebrow && <p className="meta mb-5 text-[12px] text-white/85">{eyebrow}</p>}
         <h1 className="display max-w-4xl text-[30px] leading-[1.1] sm:text-[clamp(34px,3.9vw,58px)]">{s.title}</h1>
         {s.description && (
-          <p className="mx-auto mt-5 max-w-[640px] text-base font-light text-white/90 sm:mt-7 sm:text-lg">{s.description}</p>
+          <p className="mx-auto mt-5 max-w-[640px] text-base font-light text-white/90 sm:mt-7 sm:text-lg">{s.description.substring(0,300)}</p>
         )}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link href={`/trip/${s.slug}`} className="btn-primary">
@@ -82,7 +82,7 @@ export default function HeroSlider({
         onClick={() => sectionRef.current?.nextElementSibling?.scrollIntoView({ behavior: "smooth" })}
         className="absolute inset-x-0 bottom-6 z-10 mx-auto flex size-11 w-fit animate-bounce items-center justify-center rounded-full text-white/80 transition-colors hover:text-white"
       >
-        <ChevronDown size={26} strokeWidth={1.6} />
+        <ChevronDownIcon size={26} strokeWidth={1.6} />
       </button>
     </section>
   );

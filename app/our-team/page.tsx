@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getSiteConfig, getTeam } from "@/lib/site";
 import PageHeader, { PageFooterContent } from "@/components/site/page-header";
 import Photo from "@/components/site/photo";
-import { UserIcon } from "@/components/site/icons";
+import { UserIcon } from "lucide-react";
 
 export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {

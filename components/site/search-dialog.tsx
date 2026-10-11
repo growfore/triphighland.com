@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice, imageUrl } from "@/lib/media";
-import { CloseIcon, SearchIcon } from "./icons";
+import { ArrowRightIcon, SearchIcon, XIcon } from "lucide-react";
 
 type Result = { kind: "trip" | "blog"; href: string; title: string; meta: string; image?: string };
 
@@ -128,7 +128,7 @@ export default function SearchDialog({ onClose, labels }: { onClose: () => void;
       className="mx-auto mt-[10vh] max-h-[80vh] w-[min(680px,calc(100vw-32px))] overflow-hidden rounded-[8px] bg-white p-0 text-ink shadow-[0_30px_80px_-20px_rgba(0,0,0,.5)] backdrop:bg-black/50"
     >
       <form onSubmit={onSubmit} role="search" className="flex items-center gap-3 border-b border-line-soft px-5 py-3">
-        <SearchIcon size={20} className="flex-none text-ink-muted" />
+        <SearchIcon strokeWidth={1.8} size={20} className="flex-none text-ink-muted" />
         <label htmlFor="site-search" className="sr-only">
           {labels.button}
         </label>
@@ -148,7 +148,7 @@ export default function SearchDialog({ onClose, labels }: { onClose: () => void;
           className="min-w-0 flex-1 bg-transparent py-2 text-lg outline-none placeholder:text-ink-muted [&::-webkit-search-cancel-button]:hidden"
         />
         <button type="button" onClick={close} aria-label="Close" className="flex size-10 flex-none items-center justify-center rounded-full hover:bg-stone">
-          <CloseIcon size={18} />
+          <XIcon strokeWidth={1.8} size={18} />
         </button>
       </form>
 
@@ -187,8 +187,8 @@ export default function SearchDialog({ onClose, labels }: { onClose: () => void;
         ))}
         {shown.length > 0 && (
           <div className="border-t border-line-soft px-6 py-3">
-            <button type="button" onClick={() => go(exploreHref)} className="text-sm font-medium text-highland-deep hover:underline">
-              {labels.button}: “{query.trim()}” →
+            <button type="button" onClick={() => go(exploreHref)} className="inline-flex items-center gap-1.5 text-sm font-medium text-highland-deep hover:underline">
+              {labels.button}: “{query.trim()}” <ArrowRightIcon size={14} strokeWidth={1.8} />
             </button>
           </div>
         )}

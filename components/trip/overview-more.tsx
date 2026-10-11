@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { CloseIcon } from "@/components/site/icons";
+import { XIcon } from "lucide-react";
 
 // Airbnb-style "Show more": a clipped preview with a button that opens the
 // full overview in a modal <dialog> (Esc and backdrop click close it).
@@ -35,7 +35,7 @@ export default function OverviewMore({ title, html, preview }: { title: string; 
               aria-label="Close"
               className="flex size-10 items-center justify-center rounded-full hover:bg-stone"
             >
-              <CloseIcon size={18} />
+              <XIcon strokeWidth={1.8} size={18} />
             </button>
           </div>
           <div className="overflow-y-auto px-6 pb-10 pt-6 sm:px-10">
