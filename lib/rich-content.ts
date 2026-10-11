@@ -1,3 +1,5 @@
+import { imageUrl } from "@/lib/media";
+
 const ENTITIES: Record<string, string> = {
   amp: "&",
   apos: "'",
@@ -17,7 +19,7 @@ function decodeEntities(value: string): string {
 }
 
 const ALLOWED_TAGS = new Set([
-  "a", "b", "blockquote", "br", "code", "em", "h1", "h2", "h3", "h4", "h5", "h6",
+  "a", "b", "blockquote", "br", "code", "em", "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6",
   "hr", "i", "img", "li", "ol", "p", "pre", "s", "small", "strong", "sub", "sup",
   "table", "tbody", "td", "th", "thead", "tr", "u", "ul",
 ]);
@@ -60,11 +62,14 @@ function sanitizeHtml(html: string): string {
       const value = dq ?? sq ?? bare ?? "";
       if (lowerName === "href" || lowerName === "src") {
         const safe = sanitizeUrl(value);
-        return safe ? ` ${lowerName}="${safe}"` : "";
+        if (!safe) return "";
+        // CMS media is stored as "/uploads/..." on the API host, not this site.
+        const url = lowerName === "src" && safe.startsWith("/") && !safe.startsWith("//") ? imageUrl(safe) : safe;
+        return ` ${lowerName}="${url.replace(/"/g, "&quot;")}"`;
       }
       return ` ${lowerName}="${value.replace(/"/g, "&quot;")}"`;
     });
-    return `<${lowerTag}${attrs}>`;
+    return lowerTag === "img" ? `<img${attrs} loading="lazy" decoding="async">` : `<${lowerTag}${attrs}>`;
   }).replace(/<script[\s\S]*?<\/script>/gi, "").replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 }
 
@@ -78,7 +83,11 @@ export function richContent(html: string | null | undefined): string {
     if (decoded === value) break;
     value = decoded;
   }
-  return sanitizeHtml(value);
+  // Tables scroll inside a wrapper on narrow screens, so the table itself can
+  // span the full width.
+  return sanitizeHtml(value)
+    .replace(/<table>/g, '<div class="rich-table"><table>')
+    .replace(/<\/table>/g, "</table></div>");
 }
 
 export function plainContent(html: string | null | undefined): string {

@@ -6,7 +6,7 @@ import Photo from "./photo";
 export default function BlogCard({ blog }: { blog: BlogSummary }) {
   return (
     <Link href={`/blog/${blog.slug}`} className="ht-card flex min-w-0 flex-col">
-      <div className="relative aspect-[4/5] overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden bg-stone">
         <Photo src={blog.coverImage} alt="" sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
       </div>
       {blog.category?.categoryName && <div className="meta mt-5 text-[12px]">{blog.category.categoryName.trim()}</div>}

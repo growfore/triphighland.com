@@ -11,14 +11,20 @@ const apiOrigin = (() => {
 
 // True for media served by the TripEleven API (allow-listed for next/image).
 export function isApiMedia(url: string): boolean {
-  return Boolean(apiOrigin) && url.startsWith(apiOrigin);
+  return url.startsWith("/uploads/") || (Boolean(apiOrigin) && url.startsWith(apiOrigin));
 }
 
-// TripEleven returns media as "/uploads/..." paths relative to the API host.
+// TripEleven returns media as "/uploads/..." paths on the API host. Those are
+// served from this site's own /uploads (proxied by the rewrite in
+// next.config.ts), so visitors only ever see this domain, including when a
+// document or image is opened in a new tab.
 export function imageUrl(path?: string | null): string {
   if (!path) return "";
-  if (/^https?:\/\//.test(path)) return path;
-  return `${apiOrigin}${path.startsWith("/") ? "" : "/"}${path}`;
+  if (/^https?:\/\//.test(path)) {
+    return apiOrigin && path.startsWith(`${apiOrigin}/uploads/`) ? path.slice(apiOrigin.length) : path;
+  }
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  return clean.startsWith("/uploads/") ? clean : `${apiOrigin}${clean}`;
 }
 
 export function formatPrice(value?: number | null, currency = "$"): string {

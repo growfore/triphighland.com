@@ -146,6 +146,10 @@ export type TripDetail = TripSummary & {
   meetingPoint?: string;
   dropOffPoint?: string;
   languages: string[];
+  accommodations: string[];
+  meals: string[];
+  // Intro video URL (YouTube/Vimeo) from the dashboard; often empty.
+  videoIntro?: string;
   countryId?: string | null;
   cityId?: string | null;
   tripCategoryId?: string | null;
@@ -206,6 +210,9 @@ export const getTrip = cache(async (slug: string): Promise<TripDetail | null> =>
     meetingPoint: t.meetingPoint || undefined,
     dropOffPoint: t.dropOffPoint || undefined,
     languages: parseJson(t.languages, []),
+    accommodations: parseJson<string[]>(t.accommodations, []).filter(Boolean),
+    meals: parseJson<string[]>(t.meals, []).filter(Boolean),
+    videoIntro: typeof t.videoIntro === "string" && t.videoIntro.trim() ? t.videoIntro.trim() : undefined,
     countryId: t.countryId,
     cityId: t.cityId,
     tripCategoryId: t.tripCategoryId,

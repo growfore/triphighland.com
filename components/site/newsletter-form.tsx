@@ -31,16 +31,20 @@ export default function NewsletterForm({ labels, heading }: { labels: Labels["ne
       {state === "done" ? (
         <p className="mt-5 text-night-muted">{labels.success}</p>
       ) : (
-        <div className="mt-5 flex border-b border-paper/50">
+        <div className={`${heading ? "mt-5" : ""} flex border border-paper/25 bg-white/[0.06] p-1.5 transition-colors focus-within:border-highland`}>
           <input
             id={id}
             name="email"
             type="email"
             required
             placeholder={labels.placeholder}
-            className="min-w-0 flex-1 bg-transparent py-3 text-[15px] text-paper outline-none placeholder:text-soot-muted"
+            className="min-w-0 flex-1 bg-transparent px-4 py-3 text-[15px] text-paper outline-none placeholder:text-soot-muted"
           />
-          <button type="submit" disabled={state === "sending"} className="min-h-11 font-medium disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={state === "sending"}
+            className="min-h-11 flex-none bg-highland px-6 text-[14px] font-medium text-night transition-colors hover:bg-[#6fa5d4] disabled:opacity-60"
+          >
             {state === "sending" ? "…" : labels.button}
           </button>
         </div>

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCities, getCountries, getSiteConfig, getTrips } from "@/lib/site";
+import { getCategories, getCities, getCountries, getSiteConfig, getTrips } from "@/lib/site";
 import PageHeader, { PageFooterContent } from "@/components/site/page-header";
 import { getLabels } from "@/lib/labels";
 import TripCard from "@/components/site/trip-card";
-import { ArrowLeftIcon, ArrowRightIcon, SearchIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +31,12 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   };
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const [config, { trips, totalPages }, countries, cities] = await Promise.all([
+  const [config, { trips, totalPages, total }, countries, cities, categories] = await Promise.all([
     getSiteConfig(),
     getTrips({ ...filters, page, limit: 12 }),
     getCountries(),
     getCities(),
+    getCategories(),
   ]);
   const header = config.content.pageHeaders?.explore;
   const labels = getLabels(config.content);
@@ -47,11 +48,9 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     ).toString();
     return `/explore${qs ? `?${qs}` : ""}`;
   };
-  const places = [
-    ...countries.map((c) => ({ key: "country" as const, handle: c.countryHandle, name: c.countryName })),
-    ...cities.map((c) => ({ key: "city" as const, handle: c.cityHandle, name: c.cityName })),
-  ];
+  const styles = categories.filter((c) => c.categoryHandle !== "default");
   const hasFilters = Object.values(filters).some(Boolean);
+  const chipRow = "-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0";
 
   return (
     <main>
@@ -80,24 +79,79 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       </PageHeader>
 
       <section className="wrap py-12 lg:py-20">
-        <div className="flex flex-col gap-5 border-b border-line pb-8">
-          {places.length > 0 && (
-            <div role="group" aria-label="Destination" className="-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0">
-              <Link href={href({ country: undefined, city: undefined })} className="chip" aria-pressed={!filters.country && !filters.city}>
-                Anywhere
-              </Link>
-              {places.map((p) => (
-                <Link
-                  key={`${p.key}-${p.handle}`}
-                  href={href(p.key === "country" ? { country: p.handle, city: undefined } : { city: p.handle, country: undefined })}
-                  className="chip"
-                  aria-pressed={filters[p.key] === p.handle}
-                >
-                  {p.name}
+        <div className="flex flex-col gap-6 border-b border-line pb-8">
+          {styles.length > 0 && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
+              <span className="meta w-28 flex-none text-[12px] text-ink-muted">Style</span>
+              <div role="group" aria-label="Trip style" className={chipRow}>
+                <Link href={href({ category: undefined })} className="chip" aria-pressed={!filters.category}>
+                  Any style
                 </Link>
-              ))}
+                {styles.map((c) => (
+                  <Link key={c.id} href={href({ category: c.categoryHandle })} className="chip" aria-pressed={filters.category === c.categoryHandle}>
+                    {c.categoryName}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
+
+          {(countries.length > 0 || cities.length > 0) && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
+              <span className="meta w-28 flex-none text-[12px] text-ink-muted">Destination</span>
+              <div className="flex min-w-0 flex-col gap-3">
+                <div role="group" aria-label="Country" className={chipRow}>
+                  <Link href={href({ country: undefined, city: undefined })} className="chip" aria-pressed={!filters.country && !filters.city}>
+                    Anywhere
+                  </Link>
+                  {countries.map((c) => (
+                    <Link
+                      key={c.id}
+                      href={href({ country: c.countryHandle, city: undefined })}
+                      className="chip"
+                      aria-pressed={filters.country === c.countryHandle}
+                    >
+                      {c.countryName}
+                    </Link>
+                  ))}
+                </div>
+                {cities.length > 0 && (
+                  // Many cities: tucked behind a toggle, open when one is chosen.
+                  <details className="group" open={Boolean(filters.city)}>
+                    <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-[14px] font-medium text-highland-deep [&::-webkit-details-marker]:hidden">
+                      More places
+                      <ChevronDownIcon size={16} strokeWidth={1.8} className="transition group-open:rotate-180" />
+                    </summary>
+                    <div role="group" aria-label="Place" className={`${chipRow} mt-3`}>
+                      {cities.map((c) => (
+                        <Link
+                          key={c.id}
+                          href={href({ city: c.cityHandle, country: undefined })}
+                          className="chip"
+                          aria-pressed={filters.city === c.cityHandle}
+                        >
+                          {c.cityName}
+                        </Link>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
+            <p className="text-ink-muted" aria-live="polite">
+              {total} {total === 1 ? "journey" : "journeys"}
+              {filters.search ? ` for “${filters.search}”` : ""}
+            </p>
+            {hasFilters && (
+              <Link href="/explore" className="inline-flex items-center gap-1.5 font-medium text-highland-deep hover:underline">
+                <XIcon size={14} strokeWidth={2} />
+                Clear filters
+              </Link>
+            )}
+          </div>
         </div>
 
         {trips.length > 0 ? (

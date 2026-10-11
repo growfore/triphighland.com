@@ -9,12 +9,14 @@ import Footer from "@/components/site/footer";
 import EnquirySheet from "@/components/site/enquiry-sheet";
 import Integrations from "@/components/site/integrations";
 import { getIntegrations } from "@/lib/integrations";
+import JsonLd from "@/components/site/json-ld";
+import { organizationLd, siteUrl } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/site/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   return {
-    metadataBase: config.url ? new URL(config.url) : undefined,
+    metadataBase: new URL(siteUrl(config)),
     title: { default: config.name, template: `%s · ${config.name}` },
     description: config.description,
     openGraph: {
@@ -37,6 +39,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" className={`${interTight.variable} ${montserrat.variable} ${plexMono.variable}`}>
       <body>
+        <JsonLd data={organizationLd(config)} />
         <Header />
         {children}
         <Footer />

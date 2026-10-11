@@ -7,10 +7,14 @@ import { getLabels } from "@/lib/labels";
 import { plainContent, richContent } from "@/lib/rich-content";
 import Photo from "@/components/site/photo";
 import TripCard from "@/components/site/trip-card";
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, MapPinIcon, MountainIcon, SlidersHorizontalIcon, UserIcon, XIcon } from "lucide-react";
+import { BedDoubleIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, FlagIcon, LanguagesIcon, MapPinIcon, MountainIcon, SlidersHorizontalIcon, UserIcon, UtensilsIcon, XIcon } from "lucide-react";
 import GalleryCarousel from "@/components/trip/gallery-carousel";
 import DayAccordion from "@/components/trip/day-accordion";
 import OverviewMore from "@/components/trip/overview-more";
+import VideoIntro from "@/components/trip/video-intro";
+import { parseVideo } from "@/lib/video";
+import JsonLd from "@/components/site/json-ld";
+import { absolute, absoluteMedia, breadcrumbLd, siteUrl } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -66,10 +70,59 @@ export default async function TripPage({ params }: Props) {
     { k: L.trip.groupSize, v: trip.guestCapacity ? String(trip.guestCapacity) : undefined, Icon: UserIcon },
   ];
   const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof MapPinIcon } => Boolean(x.v));
+  // Secondary details: shown in their own strip so the hero facts stay short.
+  const startPoint = trip.meetingPoint || city?.cityName;
+  const glance = [
+    { k: L.trip.accommodation, v: trip.accommodations.join(", "), Icon: BedDoubleIcon },
+    { k: L.trip.meals, v: trip.meals.join(", "), Icon: UtensilsIcon },
+    { k: L.trip.languages, v: trip.languages.join(", "), Icon: LanguagesIcon },
+    { k: L.trip.endPoint, v: trip.dropOffPoint && trip.dropOffPoint !== startPoint ? trip.dropOffPoint : "", Icon: FlagIcon },
+  ].filter((x) => x.v);
+  const priceRange = trip.price != null && trip.maxPrice != null && trip.maxPrice > trip.price;
+  const hasVideo = Boolean(parseVideo(trip.videoIntro));
+
+  // "$" → USD; a three-letter code is used as-is; anything else drops the Offer.
+  const currencyCode = L.card.currency === "$" ? "USD" : /^[A-Z]{3}$/.test(L.card.currency) ? L.card.currency : undefined;
+  const tripLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: trip.title,
+    description: trip.seo?.metaDescription || overviewText.slice(0, 300) || undefined,
+    url: absolute(config, `/trip/${trip.slug}`),
+    image: trip.images.slice(0, 6).map((src) => absoluteMedia(config, src)),
+    provider: { "@id": `${siteUrl(config)}/#organization` },
+    itinerary: trip.itinerary.length
+      ? {
+          "@type": "ItemList",
+          numberOfItems: trip.itinerary.length,
+          itemListElement: trip.itinerary.map((d, i) => ({ "@type": "ListItem", position: i + 1, name: `Day ${d.day}: ${d.title}` })),
+        }
+      : undefined,
+    offers:
+      trip.price != null && currencyCode
+        ? {
+            "@type": "Offer",
+            price: trip.price,
+            priceCurrency: currencyCode,
+            availability: "https://schema.org/InStock",
+            url: absolute(config, `/trip/${trip.slug}`),
+          }
+        : undefined,
+  };
 
   return (
     // Read by the site-wide enquiry sheet to pre-fill this trip.
     <main data-enquiry-trip={trip.title} data-enquiry-addons={JSON.stringify(addons.map((a) => ({ name: a.name, price: a.price })))}>
+      <JsonLd
+        data={[
+          tripLd,
+          breadcrumbLd(config, [
+            { name: "Home", path: "/" },
+            { name: "Explore", path: "/explore" },
+            { name: trip.title, path: `/trip/${trip.slug}` },
+          ]),
+        ]}
+      />
       {/* SPLIT HERO */}
       <section className="flex flex-wrap bg-night text-white">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col px-4 pb-12 pt-8 sm:px-[clamp(20px,4vw,64px)] lg:min-h-[720px] lg:pb-18 lg:pt-16">
@@ -129,7 +182,10 @@ export default async function TripPage({ params }: Props) {
           {trip.price != null && (
             <p className="m-0 hidden flex-none text-sm text-ink-muted sm:block">
               {L.card.from}{" "}
-              <span className="text-base font-semibold tracking-[-0.02em] text-ink">{formatPrice(trip.price, L.card.currency)}</span>{" "}
+              <span className="text-base font-semibold tracking-[-0.02em] text-ink">
+                {formatPrice(trip.price, L.card.currency)}
+                {priceRange && <> – {formatPrice(trip.maxPrice, L.card.currency)}</>}
+              </span>{" "}
               {L.card.perPerson}
             </p>
           )}
@@ -152,6 +208,32 @@ export default async function TripPage({ params }: Props) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {/* AT A GLANCE */}
+      {glance.length > 0 && (
+        <section aria-label={L.trip.atAGlance} className="wrap pb-16 lg:pb-24">
+          <dl className="grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+            {glance.map(({ k, v, Icon }) => (
+              <div key={k} className="bg-white p-6">
+                <dt className="meta flex items-center gap-2 text-[11px] text-ink-muted">
+                  <Icon size={15} strokeWidth={2} className="flex-none opacity-70" />
+                  {k}
+                </dt>
+                <dd className="mt-2 text-base font-medium">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {/* INTRO VIDEO */}
+      {hasVideo && (
+        <section className="wrap pb-16 lg:pb-24">
+          <div className="max-w-[1080px]">
+            <VideoIntro url={trip.videoIntro} title={trip.title} fallbackPoster={trip.images[1] ?? trip.images[0]} />
+          </div>
         </section>
       )}
 

@@ -9,6 +9,25 @@ const ALLOWED_POSTS = new Set(["email/send", "newsletter/subscribe"]);
 
 type Params = { params: Promise<{ path: string[] }> };
 
+// The site's enquiry forms are the only legitimate senders; cap what the open
+// endpoint will relay so it can't be used to push bulk mail.
+const MAX_BODY_BYTES = 32_000;
+const EMAIL_FIELDS = ["subject", "text", "html", "replyTo"] as const;
+
+function emailPayload(raw: string): string | null {
+  if (raw.length > MAX_BODY_BYTES) return null;
+  let body: Record<string, unknown>;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (typeof body.subject !== "string" || !body.subject.trim() || typeof body.text !== "string" || !body.text.trim()) return null;
+  if (body.replyTo != null && (typeof body.replyTo !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.replyTo))) delete body.replyTo;
+  // Only known fields go through: the recipient is always the tenant's own.
+  return JSON.stringify(Object.fromEntries(EMAIL_FIELDS.filter((k) => body[k] != null).map((k) => [k, body[k]])));
+}
+
 function relay(res: Response) {
   return new Response(res.body, {
     status: res.status,
@@ -32,10 +51,17 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!ALLOWED_POSTS.has(joined)) {
     return Response.json({ message: "Not allowed" }, { status: 403 });
   }
+  let body = await req.text();
+  if (body.length > MAX_BODY_BYTES) return Response.json({ message: "Payload too large" }, { status: 413 });
+  if (joined === "email/send") {
+    const clean = emailPayload(body);
+    if (!clean) return Response.json({ message: "Invalid email payload" }, { status: 400 });
+    body = clean;
+  }
   const res = await apiFetch(`/${joined}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: await req.text(),
+    body,
   });
   return relay(res);
 }

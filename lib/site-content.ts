@@ -63,6 +63,8 @@ export type SiteContent = {
       startPoint?: string;
       accommodation?: string;
       meals?: string;
+      languages?: string;
+      endPoint?: string;
     };
     sidebar?: {
       from?: string;

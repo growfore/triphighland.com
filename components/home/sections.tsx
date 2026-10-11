@@ -21,7 +21,7 @@ import BlogCard from "@/components/site/blog-card";
 import TestimonialQuote from "@/components/home/testimonial-quote";
 import { RailControls, RailTrack, ScrollRail } from "@/components/home/scroll-rail";
 import NewsletterForm from "@/components/site/newsletter-form";
-import { ArrowRightIcon, CheckIcon, StarIcon, UserIcon } from "lucide-react";
+import { ArrowRightIcon, CheckIcon, ExternalLinkIcon, StarIcon, UserIcon } from "lucide-react";
 
 export type Destination = { key: string; name: string; image?: string; href: string };
 
@@ -447,47 +447,101 @@ export function Testimonials({ ctx }: { ctx: HomeCtx }) {
   const total = Math.max(ctx.testimonialTotal, list.length);
   const [first, ...rest] = list;
   const side = rest.slice(0, 2);
-  const more = rest.slice(2);
+  // Homepage shows at most 9: the featured one, two beside it, six in the rail.
+  const more = rest.slice(2, 2 + TESTIMONIAL_RAIL);
+  const platforms = reviewPlatforms(ctx.config);
 
   return (
-    <section className="wrap py-16 lg:py-32">
-      <Heading
-        copy={copy}
-        fallback={<>From our <em>guest book</em></>}
-        aside={
-          <div className="flex items-center gap-4 sm:text-right">
-            <div className="text-[44px] font-semibold leading-none tracking-[-0.02em]">{average.toFixed(1)}</div>
-            <div>
-              <Stars rating={average} className="text-highland-deep" />
-              <div className="mt-1 text-sm text-ink-muted">
-                {total} {total === 1 ? "guest review" : "guest reviews"}
+    <section className="py-16 lg:py-32">
+      <div className="wrap">
+        <Heading
+          copy={copy}
+          fallback={<>From our <em>guest book</em></>}
+          aside={
+            <div className="flex items-center gap-4 sm:text-right">
+              <div className="text-[44px] font-semibold leading-none tracking-[-0.02em]">{average.toFixed(1)}</div>
+              <div>
+                <Stars rating={average} className="text-highland-deep" />
+                <div className="mt-1 text-sm text-ink-muted">
+                  {total} {total === 1 ? "guest review" : "guest reviews"}
+                </div>
               </div>
             </div>
-          </div>
-        }
-      />
+          }
+        />
 
-      <div className={`grid grid-cols-1 gap-6 ${side.length ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" : ""}`}>
-        <GuestCard t={first} featured />
-        {side.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-1">
-            {side.map((t) => (
-              <GuestCard key={t.id} t={t} />
-            ))}
-          </div>
-        )}
+        <div className={`grid grid-cols-1 gap-6 ${side.length ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" : ""}`}>
+          <GuestCard t={first} featured />
+          {side.length > 0 && (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-1">
+              {side.map((t) => (
+                <GuestCard key={t.id} t={t} />
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
 
       {more.length > 0 && (
-        <div className="-mx-[clamp(16px,4vw,64px)] mt-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[clamp(16px,4vw,64px)] pb-2 scrollbar-hide">
-          {more.map((t) => (
-            <div key={t.id} className="w-[82vw] flex-none snap-start sm:w-[380px]">
-              <GuestCard t={t} />
-            </div>
-          ))}
+        <ScrollRail>
+          <div className="wrap mt-6 flex justify-end">
+            <RailControls />
+          </div>
+          <div className="mt-4">
+            <RailTrack label="More guest reviews">
+              {more.map((t) => (
+                <div key={t.id} className="w-[82vw] flex-none snap-start sm:w-[380px]">
+                  <GuestCard t={t} />
+                </div>
+              ))}
+            </RailTrack>
+          </div>
+        </ScrollRail>
+      )}
+
+      {platforms.length > 0 && (
+        <div className="wrap mt-12">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-line pt-8">
+            <span className="meta text-[12px] text-ink-muted">Read more reviews on</span>
+            <ul className="flex flex-wrap gap-3">
+              {platforms.map((p) => (
+                <li key={p.name}>
+                  <a
+                    href={p.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-4 border border-line px-5 py-3 transition-colors hover:border-ink"
+                  >
+                    <span className="font-semibold">{p.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-[15px] font-semibold">{p.rating.toFixed(1)}</span>
+                      <Stars rating={p.rating} size={14} className="text-highland-deep" />
+                    </span>
+                    <span className="text-[14px] text-ink-muted">{p.count} reviews</span>
+                    <ExternalLinkIcon size={14} strokeWidth={1.8} className="text-ink-muted transition-colors group-hover:text-ink" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </section>
+  );
+}
+
+const TESTIMONIAL_RAIL = 6;
+
+// Google / Tripadvisor profiles from site config, when they have a real link
+// and at least one review.
+function reviewPlatforms(config: SiteConfig) {
+  const r = config.reviews;
+  return [
+    { name: "Google", ...r?.googleReview },
+    { name: "Tripadvisor", ...r?.tripadvisor },
+  ].filter((p): p is { name: string; link: string; count: number; rating: number } =>
+    typeof p.link === "string" && /^https?:\/\/[^\s]+$/.test(p.link) && Number(p.count) > 0 && Number.isFinite(Number(p.rating)),
   );
 }
 

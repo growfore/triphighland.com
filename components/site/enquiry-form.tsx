@@ -5,7 +5,9 @@ import type { Labels } from "@/lib/labels";
 import { formatPrice } from "@/lib/media";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import { WhatsAppIcon } from "./icons";
+import { SpamTrap, useSpamCheck } from "./spam-trap";
 
 export type AddonOption = { name: string; price?: number | null };
 
@@ -95,6 +97,39 @@ async function loadTripAddons(slug: string): Promise<AddonOption[]> {
   return (Array.isArray(ids) ? ids : []).map(Number).flatMap((id) => extras.filter((e) => e.id === id));
 }
 
+const MAX_TRAVELLERS = 99;
+
+// Exact group size: type a number or step it with −/+.
+function TravellersField() {
+  const [count, setCount] = useState("2");
+  const n = Number(count) || 0;
+  const set = (v: number) => setCount(String(Math.min(MAX_TRAVELLERS, Math.max(1, v))));
+  const step = "flex size-9 flex-none items-center justify-center border border-paper/30 text-paper transition-colors hover:enabled:border-paper disabled:opacity-30";
+  return (
+    <div className="flex items-center gap-2 border-b border-paper/50 py-1 focus-within:border-highland">
+      <button type="button" aria-label="Fewer travellers" disabled={n <= 1} onClick={() => set(n - 1)} className={step}>
+        <MinusIcon size={16} strokeWidth={1.8} />
+      </button>
+      <input
+        name="travellers"
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={MAX_TRAVELLERS}
+        required
+        value={count}
+        onChange={(e) => setCount(e.target.value.replace(/\D/g, "").slice(0, 2))}
+        onBlur={() => set(n || 1)}
+        aria-label="Number of travellers"
+        className="w-full min-w-0 !border-0 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <button type="button" aria-label="More travellers" disabled={n >= MAX_TRAVELLERS} onClick={() => set(n + 1)} className={step}>
+        <PlusIcon size={16} strokeWidth={1.8} />
+      </button>
+    </div>
+  );
+}
+
 function AddonPicker({ options, defaultChecked, currency }: { options: AddonOption[]; defaultChecked?: string[]; currency: string }) {
   return (
     <fieldset className="field-line sm:col-span-2">
@@ -133,6 +168,7 @@ export default function EnquiryForm({
   labels,
 }: Props) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const looksAutomated = useSpamCheck();
   const [addonOptions, setAddonOptions] = useState<AddonOption[]>(addons ?? []);
   const latestJourney = useRef(defaultTrip);
 
@@ -183,6 +219,11 @@ export default function EnquiryForm({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Bots get the normal thank-you so they don't retry; nothing is sent.
+    if (looksAutomated(e.currentTarget)) {
+      setState("done");
+      return;
+    }
     const { data, journey, filled } = collect(e.currentTarget);
     const escape = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -193,6 +234,8 @@ export default function EnquiryForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subject: `New enquiry from ${data.name} — ${journey}`,
+          // Lets the team answer straight from their inbox.
+          replyTo: data.email,
           text: filled.map(([k, v]) => `${k}: ${v}`).join("\n"),
           html: `<table>${filled
             .map(([k, v]) => `<tr><td><strong>${k}</strong></td><td>${escape(v).replace(/\n/g, "<br/>")}</td></tr>`)
@@ -217,7 +260,8 @@ export default function EnquiryForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 sm:gap-y-7">
+    <form onSubmit={onSubmit} className="relative grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 sm:gap-y-7">
+      <SpamTrap />
       <label className="field-line">
         Name
         <input name="name" type="text" required autoComplete="name" />
@@ -249,10 +293,10 @@ export default function EnquiryForm({
             Start date
             <input name="startDate" type="date" style={{ colorScheme: "dark" }} />
           </label>
-          <label className="field-line">
-            Travellers
-            <FieldSelect name="travellers" defaultValue="2" options={["1", "2", "3–5", "6+"]} />
-          </label>
+          <div className="field-line">
+            <span>Travellers</span>
+            <TravellersField />
+          </div>
         </>
       )}
 

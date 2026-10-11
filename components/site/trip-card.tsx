@@ -32,7 +32,7 @@ export function PriceFrom({ price, labels, className }: { price?: number | null;
 export default function TripCard({ trip, labels }: { trip: TripSummary; labels: CardLabels; size?: "lg" | "md" }) {
   return (
     <Link href={`/trip/${trip.slug}`} className="ht-card flex w-full flex-col text-ink">
-      <div className="relative aspect-[4/5] overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden bg-stone">
         <Photo src={trip.images[0]} alt={trip.title} sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
       </div>
       <div className="meta mt-4 text-[12px]">{tripMeta(trip)}</div>
