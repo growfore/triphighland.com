@@ -62,22 +62,19 @@ export default async function TripPage({ params }: Props) {
     ...trip.itinerary.flatMap((d) => (d.dayFeaturedImages ?? []).map((f) => ({ src: f.image, caption: f.title }))),
   ].filter((s, i, all) => s.src && all.findIndex((x) => x.src === s.src) === i);
 
+  const startPoint = trip.meetingPoint || city?.cityName;
   const facts: { k: string; v?: string | null; Icon: typeof MapPinIcon }[] = [
-    { k: L.trip.startPoint, v: trip.meetingPoint || city?.cityName || country?.countryName, Icon: MapPinIcon },
+    { k: L.trip.startPoint, v: startPoint || country?.countryName, Icon: MapPinIcon },
+    { k: L.trip.endPoint, v: trip.dropOffPoint && trip.dropOffPoint !== startPoint ? trip.dropOffPoint : "", Icon: FlagIcon },
     { k: L.trip.duration, v: trip.duration, Icon: ClockIcon },
     { k: L.trip.maxAltitude, v: formatAltitude(trip.maximumAltitude), Icon: MountainIcon },
     { k: L.trip.difficulty, v: formatGrade(trip.difficultyLevel), Icon: SlidersHorizontalIcon },
     { k: L.trip.groupSize, v: trip.guestCapacity ? String(trip.guestCapacity) : undefined, Icon: UserIcon },
-  ];
-  const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof MapPinIcon } => Boolean(x.v));
-  // Secondary details: shown in their own strip so the hero facts stay short.
-  const startPoint = trip.meetingPoint || city?.cityName;
-  const glance = [
     { k: L.trip.accommodation, v: trip.accommodations.join(", "), Icon: BedDoubleIcon },
     { k: L.trip.meals, v: trip.meals.join(", "), Icon: UtensilsIcon },
     { k: L.trip.languages, v: trip.languages.join(", "), Icon: LanguagesIcon },
-    { k: L.trip.endPoint, v: trip.dropOffPoint && trip.dropOffPoint !== startPoint ? trip.dropOffPoint : "", Icon: FlagIcon },
-  ].filter((x) => x.v);
+  ];
+  const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof MapPinIcon } => Boolean(x.v));
   const priceRange = trip.price != null && trip.maxPrice != null && trip.maxPrice > trip.price;
   const hasVideo = Boolean(parseVideo(trip.videoIntro));
 
@@ -216,23 +213,6 @@ export default async function TripPage({ params }: Props) {
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {/* AT A GLANCE */}
-      {glance.length > 0 && (
-        <section aria-label={L.trip.atAGlance} className="wrap pb-16 lg:pb-24">
-          <dl className="grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-            {glance.map(({ k, v, Icon }) => (
-              <div key={k} className="bg-white p-6">
-                <dt className="meta flex items-center gap-2 text-[11px] text-ink-muted">
-                  <Icon size={15} strokeWidth={2} className="flex-none opacity-70" />
-                  {k}
-                </dt>
-                <dd className="mt-2 text-base font-medium">{v}</dd>
-              </div>
-            ))}
-          </dl>
         </section>
       )}
 
