@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import type { NavItem } from "@/lib/site";
 import Photo from "./photo";
-import { ArrowRightIcon, ChevronDownIcon, SearchIcon } from "lucide-react";
+import { ArrowRightIcon, ChevronDownIcon } from "lucide-react";
 
 // Card details for trips the menu links to, keyed by slug (menu items carry
 // only a label and url).
@@ -36,9 +36,8 @@ export function isMega(item: NavItem) {
   return item.children.some((g) => g.children.some((e) => e.children.length > 0));
 }
 
-const CARDS = 3;
-// Past these counts a list gets a filter box / the chips collapse into "+N".
-const FILTER_AT = 10;
+// Two columns of six rows fill the panel; the rest sit behind "Explore more".
+const PANEL_TRIPS = 12;
 const MAX_PLACES = 8;
 const MOBILE_TRIPS = 6;
 
@@ -68,23 +67,36 @@ function PlaceChips({ entry, dark }: { entry: NavItem; dark?: boolean }) {
 
 export default function MegaMenu({ item, trips }: { item: NavItem; trips: Record<string, MenuTrip> }) {
   const [open, setOpen] = useState(false);
-  const [groupId, setGroupId] = useState(item.children[0]?.id);
-  const [entryByGroup, setEntryByGroup] = useState<Record<string, string>>({});
-  const [query, setQuery] = useState("");
+  const allId = `${item.id}-all`;
+  const [entryId, setEntryId] = useState(allId);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const triggerRef = useRef<HTMLAnchorElement>(null);
 
-  const group = item.children.find((g) => g.id === groupId) ?? item.children[0];
-  const q = query.trim().toLowerCase();
-  const entries = (group?.children ?? []).filter((e) => !q || e.label.toLowerCase().includes(q));
-  const entry = entries.find((e) => e.id === entryByGroup[group.id]) ?? entries[0];
-  const entryTrips = entry ? tripsUnder(entry) : [];
+  // "All trips" heads the list; countries and categories follow, the group
+  // label only heading its run.
+  const all: NavItem = { id: allId, label: "All trips", url: item.url, children: item.children };
+  const entries = [all, ...item.children.flatMap((g) => g.children)];
+  const entry = entries.find((e) => e.id === entryId) ?? all;
+  const entryTrips = tripsUnder(entry);
+  const showGroupLabels = item.children.filter((g) => g.children.length).length > 1;
 
-  const pickGroup = (id: string) => {
-    if (id === group?.id) return;
-    setGroupId(id);
-    setQuery("");
+  const entryLink = (e: NavItem) => {
+    const active = e.id === entry.id;
+    return (
+      <Link
+        href={e.url || "#"}
+        onPointerEnter={() => setEntryId(e.id)}
+        onFocus={() => setEntryId(e.id)}
+        aria-current={active ? "true" : undefined}
+        className={`block truncate py-2.5 text-[22px] font-semibold leading-tight xl:text-[24px] ${
+          active ? "text-ink" : "text-ink-muted/80 hover:text-ink"
+        }`}
+      >
+        {e.label}
+      </Link>
+    );
   };
+
   const show = () => {
     clearTimeout(closeTimer.current);
     setOpen(true);
@@ -130,112 +142,61 @@ export default function MegaMenu({ item, trips }: { item: NavItem; trips: Record
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-1 opacity-0"
         }`}
       >
-        {/* Fixed height; each column scrolls on its own so long lists never push the panel off-screen. */}
-        <div className="wrap grid h-[min(440px,calc(100dvh-8rem))] grid-cols-[180px_220px_minmax(0,1fr)] py-8 xl:grid-cols-[200px_260px_minmax(0,1fr)]">
-          {/* Groups: Countries / Categories */}
-          <div className="flex min-h-0 flex-col pr-6">
-            <ul className="-mr-2 flex min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain pr-2">
-              {item.children.map((g) => {
-                const active = g.id === group?.id;
-                return (
+        {/* Capped height; each column scrolls on its own so long lists never push the panel off-screen. */}
+        <div className="wrap grid max-h-[calc(100dvh-8rem)] grid-cols-[260px_minmax(0,1fr)] py-10 xl:grid-cols-[320px_minmax(0,1fr)]">
+          {/* Categories: countries and trip categories */}
+          <div className="flex min-h-0 flex-col pr-8">
+            <ul className="-mr-2 flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain pr-2">
+              <li>{entryLink(all)}</li>
+              {item.children.map((g) =>
+                g.children.length === 0 ? null : (
                   <li key={g.id}>
-                    <button
-                      type="button"
-                      onPointerEnter={() => pickGroup(g.id)}
-                      onFocus={() => pickGroup(g.id)}
-                      onClick={() => pickGroup(g.id)}
-                      aria-pressed={active}
-                      className={`meta flex w-full items-center justify-between border-l-2 py-2 pl-3 text-left text-[12px] ${
-                        active ? "border-highland-deep text-highland-deep" : "border-transparent text-ink-muted hover:text-ink"
-                      }`}
-                    >
-                      {g.label}
-                      <span className="font-sans text-[12px] tracking-normal opacity-60">{g.children.length}</span>
-                    </button>
+                    {showGroupLabels && <p className="meta mb-1 text-[11px] text-ink-muted">{g.label}</p>}
+                    <ul className="flex flex-col">
+                      {g.children.map((e) => (
+                        <li key={e.id}>{entryLink(e)}</li>
+                      ))}
+                    </ul>
                   </li>
-                );
-              })}
+                ),
+              )}
             </ul>
-            <Link
-              href={item.url || "#"}
-              className="mt-auto flex flex-none items-center gap-2 pl-3 pt-4 text-[14px] font-medium text-highland-deep hover:underline"
-            >
-              All trips <ArrowRightIcon strokeWidth={1.6} size={14} />
-            </Link>
           </div>
 
-          {/* Entries of the active group: Nepal, Trekking, ... */}
-          <div className="flex min-h-0 flex-col border-l border-line-soft px-6">
-            {(group?.children.length ?? 0) > FILTER_AT && (
-              <label className="mb-3 flex flex-none items-center gap-2 border-b border-line px-3 pb-2 text-ink-muted focus-within:border-highland-deep">
-                <SearchIcon strokeWidth={1.8} size={14} />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Filter ${group.label.toLowerCase()}`}
-                  aria-label={`Filter ${group.label}`}
-                  className="w-full bg-transparent text-[14px] text-ink outline-none placeholder:text-ink-muted"
-                />
-              </label>
-            )}
-            <ul className="-mr-3 flex min-h-0 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-3">
-              {entries.map((e) => {
-                const active = e.id === entry?.id;
-                const count = tripsUnder(e).length;
+          {/* Trips of the active category */}
+          <div className="flex min-h-0 min-w-0 flex-col border-l border-line pl-10 xl:pl-14">
+            <ul className="grid min-h-0 grid-cols-2 gap-x-10 gap-y-4 overflow-y-auto overscroll-contain">
+              {entryTrips.slice(0, PANEL_TRIPS).map((t) => {
+                const info = trips[tripSlug(t.url)!];
                 return (
-                  <li key={e.id}>
-                    <Link
-                      href={e.url || "#"}
-                      onPointerEnter={() => setEntryByGroup((m) => ({ ...m, [group.id]: e.id }))}
-                      onFocus={() => setEntryByGroup((m) => ({ ...m, [group.id]: e.id }))}
-                      className={`flex items-baseline justify-between gap-3 rounded-[4px] px-3 py-2.5 text-[15px] ${
-                        active ? "bg-stone font-medium" : "hover:bg-stone/60"
-                      }`}
-                    >
-                      <span className="min-w-0 truncate">{e.label}</span>
-                      {count > 0 && <span className="flex-none text-[12px] text-ink-muted">{tripCount(count)}</span>}
+                  <li key={t.id}>
+                    <Link href={t.url} className="group/trip flex items-center gap-4">
+                      <span className="relative size-14 flex-none overflow-hidden bg-stone">
+                        <Photo src={info?.image} alt="" sizes="56px" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="line-clamp-2 text-[16px] leading-snug group-hover/trip:text-highland-deep">{t.label}</span>
+                        {(info?.meta || info?.price) && (
+                          <span className="mt-0.5 block truncate text-[12px] text-ink-muted">
+                            {[info.meta, info.price && `from ${info.price}`].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
+                      </span>
                     </Link>
                   </li>
                 );
               })}
-              {entries.length === 0 && <li className="px-3 py-2.5 text-[14px] text-ink-muted">No matches</li>}
             </ul>
+            {entryTrips.length === 0 && <p className="text-[15px] text-ink-muted">No trips listed yet.</p>}
+
+            <Link
+              href={entry.url || "#"}
+              className="mt-8 flex flex-none items-center gap-2 self-start text-[17px] font-semibold underline decoration-2 underline-offset-[6px] hover:text-highland-deep"
+            >
+              {entry === all ? "Explore all trips" : `Explore more ${entry.label} trips`}
+              <ArrowRightIcon strokeWidth={1.8} size={18} />
+            </Link>
           </div>
-
-          {/* Preview of the active entry: places and trip cards */}
-          {entry && (
-            <div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain border-l border-line-soft pl-8">
-              <div className="flex flex-wrap items-baseline justify-between gap-4">
-                <h2 className="display text-[20px] leading-tight">{entry.label}</h2>
-                <Link href={entry.url || "#"} className="flex items-center gap-2 text-[14px] font-medium text-highland-deep hover:underline">
-                  View all {entryTrips.length > 0 && entryTrips.length} <ArrowRightIcon strokeWidth={1.6} size={14} />
-                </Link>
-              </div>
-
-              <div className="mt-4">
-                <PlaceChips entry={entry} />
-              </div>
-
-              <ul className="mt-6 grid grid-cols-3 gap-5">
-                {entryTrips.slice(0, CARDS).map((t) => {
-                  const info = trips[tripSlug(t.url)!];
-                  return (
-                    <li key={t.id}>
-                      <Link href={t.url} className="ht-card group/trip flex flex-col">
-                        <span className="relative block aspect-[4/3] overflow-hidden bg-stone">
-                          <Photo src={info?.image} alt="" sizes="240px" />
-                        </span>
-                        {info?.meta && <span className="meta mt-3 text-[11px] text-ink-muted">{info.meta}</span>}
-                        <span className="mt-1 text-[14px] font-medium leading-snug group-hover/trip:text-highland-deep">{t.label}</span>
-                        {info?.price && <span className="mt-1 text-[13px] text-ink-muted">from {info.price}</span>}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-              {entryTrips.length === 0 && <p className="mt-6 text-[14px] text-ink-muted">No trips listed yet.</p>}
-            </div>
-          )}
         </div>
       </div>
     </div>

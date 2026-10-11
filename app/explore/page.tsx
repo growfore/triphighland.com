@@ -4,7 +4,9 @@ import { getCategories, getCities, getCountries, getSiteConfig, getTrips } from 
 import PageHeader, { PageFooterContent } from "@/components/site/page-header";
 import { getLabels } from "@/lib/labels";
 import TripCard from "@/components/site/trip-card";
+import FilterSheet from "@/components/site/filter-sheet";
 import { ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +52,68 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   };
   const styles = categories.filter((c) => c.categoryHandle !== "default");
   const hasFilters = Object.values(filters).some(Boolean);
-  const chipRow = "-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:flex-wrap sm:px-0";
+  const activeFilters = [filters.category, filters.country || filters.city].filter(Boolean).length;
+
+  const option = (key: string, to: string, label: string, active: boolean) => (
+    <li key={key}>
+      <Link
+        href={to}
+        aria-current={active ? "true" : undefined}
+        className={`-ml-px block border-l-2 py-1.5 pl-4 text-[15px] ${
+          active ? "border-ink font-semibold text-ink" : "border-transparent text-ink-muted hover:text-ink"
+        }`}
+      >
+        {label}
+      </Link>
+    </li>
+  );
+  const group = (title: string, children: ReactNode) => (
+    <div role="group" aria-label={title}>
+      <p className="meta mb-3 text-[12px] text-ink-muted">{title}</p>
+      <ul className="flex flex-col border-l border-line">{children}</ul>
+    </div>
+  );
+
+  // Rendered twice: a sidebar on large screens, a bottom sheet below that.
+  const filterPanel = (
+    <div className="flex flex-col gap-8">
+      {styles.length > 0 &&
+        group("Style", [
+          option("any", href({ category: undefined }), "Any style", !filters.category),
+          ...styles.map((c) => option(c.id, href({ category: c.categoryHandle }), c.categoryName, filters.category === c.categoryHandle)),
+        ])}
+
+      {countries.length > 0 &&
+        group("Destination", [
+          option("anywhere", href({ country: undefined, city: undefined }), "Anywhere", !filters.country && !filters.city),
+          ...countries.map((c) =>
+            option(c.id, href({ country: c.countryHandle, city: undefined }), c.countryName, filters.country === c.countryHandle),
+          ),
+        ])}
+
+      {cities.length > 0 && (
+        // Many cities: tucked behind a toggle, open when one is chosen.
+        <details className="group" open={Boolean(filters.city)}>
+          <summary className="meta mb-3 flex cursor-pointer list-none items-center justify-between text-[12px] text-ink-muted [&::-webkit-details-marker]:hidden">
+            Places
+            <ChevronDownIcon size={16} strokeWidth={1.8} className="transition group-open:rotate-180" />
+          </summary>
+          <ul role="group" aria-label="Place" className="flex flex-col border-l border-line">
+            {cities.map((c) =>
+              option(c.id, href({ city: c.cityHandle, country: undefined }), c.cityName, filters.city === c.cityHandle),
+            )}
+          </ul>
+        </details>
+      )}
+
+      {hasFilters && (
+        <Link href="/explore" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-highland-deep hover:underline">
+          <XIcon size={14} strokeWidth={2} />
+          Clear filters
+        </Link>
+      )}
+    </div>
+  );
 
   return (
     <main>
@@ -78,116 +141,65 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         </form>
       </PageHeader>
 
-      <section className="wrap py-12 lg:py-20">
-        <div className="flex flex-col gap-6 border-b border-line pb-8">
-          {styles.length > 0 && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
-              <span className="meta w-28 flex-none text-[12px] text-ink-muted">Style</span>
-              <div role="group" aria-label="Trip style" className={chipRow}>
-                <Link href={href({ category: undefined })} className="chip" aria-pressed={!filters.category}>
-                  Any style
-                </Link>
-                {styles.map((c) => (
-                  <Link key={c.id} href={href({ category: c.categoryHandle })} className="chip" aria-pressed={filters.category === c.categoryHandle}>
-                    {c.categoryName}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+      <section className="wrap grid gap-10 py-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14 lg:py-20 xl:grid-cols-[260px_minmax(0,1fr)]">
+        <aside aria-label="Filters" className="hidden lg:block">
+          <div className="sticky top-28">{filterPanel}</div>
+        </aside>
 
-          {(countries.length > 0 || cities.length > 0) && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
-              <span className="meta w-28 flex-none text-[12px] text-ink-muted">Destination</span>
-              <div className="flex min-w-0 flex-col gap-3">
-                <div role="group" aria-label="Country" className={chipRow}>
-                  <Link href={href({ country: undefined, city: undefined })} className="chip" aria-pressed={!filters.country && !filters.city}>
-                    Anywhere
-                  </Link>
-                  {countries.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={href({ country: c.countryHandle, city: undefined })}
-                      className="chip"
-                      aria-pressed={filters.country === c.countryHandle}
-                    >
-                      {c.countryName}
-                    </Link>
-                  ))}
-                </div>
-                {cities.length > 0 && (
-                  // Many cities: tucked behind a toggle, open when one is chosen.
-                  <details className="group" open={Boolean(filters.city)}>
-                    <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-[14px] font-medium text-highland-deep [&::-webkit-details-marker]:hidden">
-                      More places
-                      <ChevronDownIcon size={16} strokeWidth={1.8} className="transition group-open:rotate-180" />
-                    </summary>
-                    <div role="group" aria-label="Place" className={`${chipRow} mt-3`}>
-                      {cities.map((c) => (
-                        <Link
-                          key={c.id}
-                          href={href({ city: c.cityHandle, country: undefined })}
-                          className="chip"
-                          aria-pressed={filters.city === c.cityHandle}
-                        >
-                          {c.cityName}
-                        </Link>
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
+        <div className="min-w-0">
+          <div className="flex items-center justify-between gap-3 border-b border-line pb-5 text-[14px]">
             <p className="text-ink-muted" aria-live="polite">
               {total} {total === 1 ? "journey" : "journeys"}
               {filters.search ? ` for “${filters.search}”` : ""}
             </p>
-            {hasFilters && (
-              <Link href="/explore" className="inline-flex items-center gap-1.5 font-medium text-highland-deep hover:underline">
-                <XIcon size={14} strokeWidth={2} />
-                Clear filters
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {trips.length > 0 ? (
-          <div className="mt-12 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:mt-16">
-            {trips.map((t) => (
-              <TripCard key={t.id} trip={t} labels={labels.card} />
-            ))}
-          </div>
-        ) : (
-          <div className="py-24 text-center">
-            <p className="display text-xl">No journeys match</p>
-            <p className="standfirst mx-auto mt-3 max-w-[420px]">
-              {filters.search ? `Nothing found for “${filters.search}”. ` : ""}Try another style or place — or tell us what you have in mind.
-            </p>
-            <div className="mt-8 flex justify-center gap-3">
+            <div className="flex items-center gap-4">
               {hasFilters && (
-                <Link href="/explore" className="btn-outline">
-                  Clear filters
+                <Link href="/explore" className="inline-flex items-center gap-1.5 font-medium text-highland-deep hover:underline">
+                  <XIcon size={14} strokeWidth={2} />
+                  Clear
                 </Link>
               )}
-              <Link href="/design-your-trip" className="btn-dark">
-                Design my trek
-              </Link>
+              <div className="lg:hidden">
+                <FilterSheet active={activeFilters}>{filterPanel}</FilterSheet>
+              </div>
             </div>
           </div>
-        )}
 
-        {totalPages > 1 && (
-          <nav aria-label="Pagination" className="meta mt-16 flex items-center justify-between border-t border-ink pt-6 text-[14px]">
-            {page > 1 ? <Link href={href({ page: String(page - 1) })} className="inline-flex items-center gap-2"><ArrowLeftIcon size={14} strokeWidth={1.8} /> Prev</Link> : <span />}
-            <span className="text-ink-muted">
-              {page} / {totalPages}
-            </span>
-            {page < totalPages ? <Link href={href({ page: String(page + 1) })} className="inline-flex items-center gap-2">Next <ArrowRightIcon size={14} strokeWidth={1.8} /></Link> : <span />}
-          </nav>
-        )}
+          {trips.length > 0 ? (
+            <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+              {trips.map((t) => (
+                <TripCard key={t.id} trip={t} labels={labels.card} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-24 text-center">
+              <p className="display text-xl">No journeys match</p>
+              <p className="standfirst mx-auto mt-3 max-w-[420px]">
+                {filters.search ? `Nothing found for “${filters.search}”. ` : ""}Try another style or place — or tell us what you have in mind.
+              </p>
+              <div className="mt-8 flex justify-center gap-3">
+                {hasFilters && (
+                  <Link href="/explore" className="btn-outline">
+                    Clear filters
+                  </Link>
+                )}
+                <Link href="/design-your-trip" className="btn-dark">
+                  Design my trek
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <nav aria-label="Pagination" className="meta mt-16 flex items-center justify-between border-t border-ink pt-6 text-[14px]">
+              {page > 1 ? <Link href={href({ page: String(page - 1) })} className="inline-flex items-center gap-2"><ArrowLeftIcon size={14} strokeWidth={1.8} /> Prev</Link> : <span />}
+              <span className="text-ink-muted">
+                {page} / {totalPages}
+              </span>
+              {page < totalPages ? <Link href={href({ page: String(page + 1) })} className="inline-flex items-center gap-2">Next <ArrowRightIcon size={14} strokeWidth={1.8} /></Link> : <span />}
+            </nav>
+          )}
+        </div>
       </section>
       <PageFooterContent fields={header} />
     </main>
