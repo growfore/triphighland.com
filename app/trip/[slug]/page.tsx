@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCities, getCountries, getExtras, getSiteConfig, getTrip, getTrips } from "@/lib/site";
-import { formatAltitude, formatGrade, formatPrice, imageUrl, stripHtml } from "@/lib/media";
+import { getCities, getCountries, getDepartures, getExtras, getSiteConfig, getTrip, getTrips } from "@/lib/site";
+import { formatAltitude, formatGrade, formatPrice, imageUrl, isApiMedia, stripHtml } from "@/lib/media";
 import { getLabels } from "@/lib/labels";
 import { plainContent, richContent } from "@/lib/rich-content";
 import Photo from "@/components/site/photo";
@@ -42,12 +43,13 @@ export default async function TripPage({ params }: Props) {
   const trip = await getTrip(slug);
   if (!trip) notFound();
 
-  const [config, countries, cities, { trips }, extras] = await Promise.all([
+  const [config, countries, cities, { trips }, extras, departures] = await Promise.all([
     getSiteConfig(),
     getCountries(),
     getCities(),
     getTrips({ limit: 12 }),
     trip.extraIds.length ? getExtras() : Promise.resolve([]),
+    getDepartures(trip.id),
   ]);
   // Keep the trip's own order of add-ons; ids missing from the catalogue drop out.
   const addons = trip.extraIds.flatMap((id) => extras.filter((e) => e.id === id));
@@ -77,6 +79,7 @@ export default async function TripPage({ params }: Props) {
   const summary = facts.filter((x): x is { k: string; v: string; Icon: typeof MapPinIcon } => Boolean(x.v));
   const priceRange = trip.price != null && trip.maxPrice != null && trip.maxPrice > trip.price;
   const hasVideo = Boolean(parseVideo(trip.videoIntro));
+  const routeMap = imageUrl(trip.routeMap);
 
   // "$" → USD; a three-letter code is used as-is; anything else drops the Offer.
   const currencyCode = L.card.currency === "$" ? "USD" : /^[A-Z]{3}$/.test(L.card.currency) ? L.card.currency : undefined;
@@ -246,6 +249,54 @@ export default async function TripPage({ params }: Props) {
         </section>
       )}
 
+      {/* ROUTE MAP — natural aspect ratio, never cropped; opens full size */}
+      {routeMap && (
+        <section id="route-map" className="wrap py-16 lg:py-24">
+          <h2 className="h-sub">{L.trip.routeMap}</h2>
+          <a href={routeMap} target="_blank" rel="noreferrer" className="mt-9 block bg-stone">
+            <Image
+              src={routeMap}
+              alt={`${trip.title} ${L.trip.routeMap.toLowerCase()}`}
+              width={0}
+              height={0}
+              sizes="(min-width: 1440px) 1400px, 100vw"
+              unoptimized={!isApiMedia(routeMap)}
+              className="h-auto w-full"
+            />
+          </a>
+        </section>
+      )}
+
+      {/* DEPARTURES */}
+      {departures.length > 0 && (
+        <section id="departures" className="wrap py-16 lg:py-24">
+          <h2 className="h-sub">{L.trip.departures}</h2>
+          <ul className="mt-9 border-t border-line">
+            {departures.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-center gap-x-8 gap-y-3 border-b border-line py-5 sm:py-6">
+                <p className="display min-w-0 flex-[1_1_260px] text-base sm:text-[clamp(17px,1.5vw,20px)]">
+                  <time dateTime={d.startDate.slice(0, 10)}>{formatDate(d.startDate)}</time>
+                  <span className="text-ink-muted"> – </span>
+                  <time dateTime={d.endDate.slice(0, 10)}>{formatDate(d.endDate)}</time>
+                </p>
+                <p className="meta flex-none text-[12px] text-ink-muted">
+                  {d.availableSpots} {d.availableSpots === 1 ? "spot" : "spots"} left
+                </p>
+                {d.price != null && (
+                  <p className="m-0 flex-none text-sm text-ink-muted">
+                    <span className="text-base font-semibold tracking-[-0.02em] text-ink">{formatPrice(d.price, L.card.currency)}</span>{" "}
+                    {L.card.perPerson}
+                  </p>
+                )}
+                <button type="button" data-enquire data-enquiry-date={d.startDate.slice(0, 10)} className="btn-mono flex-none px-4 py-2 text-[12px]">
+                  {L.trip.talkToExpert}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* INCLUDED / EXCLUDED — stacked */}
       {(trip.inclusions.length > 0 || trip.exclusions.length > 0) && (
         <section className="wrap flex max-w-[1440px] flex-col gap-12 py-16 lg:py-24">
@@ -353,6 +404,12 @@ export default async function TripPage({ params }: Props) {
       )}
     </main>
   );
+}
+
+// Departure dates are calendar days stored at UTC midnight; format in UTC so
+// they don't shift a day for the server's or visitor's zone.
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 // Accordion row matching the day-by-day itinerary rows.

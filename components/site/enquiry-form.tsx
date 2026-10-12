@@ -18,6 +18,8 @@ type Props = {
   // Add-ons of the fixed/preselected trip, and which of them start ticked.
   addons?: AddonOption[];
   defaultAddons?: string[];
+  // YYYY-MM-DD; prefills the trip variant's start date (e.g. a picked departure).
+  defaultStartDate?: string;
   // Journey title → slug. With it, picking a journey loads that trip's add-ons.
   tripSlugs?: Record<string, string>;
   currency?: string;
@@ -167,6 +169,7 @@ export default function EnquiryForm({
   defaultMessage,
   addons,
   defaultAddons,
+  defaultStartDate,
   tripSlugs,
   currency = "$",
   whatsapp,
@@ -301,7 +304,7 @@ export default function EnquiryForm({
         <>
           <label className="field-line">
             Start date
-            <input name="startDate" type="date" style={{ colorScheme: "dark" }} />
+            <input name="startDate" type="date" defaultValue={defaultStartDate} style={{ colorScheme: "dark" }} />
           </label>
           <div className="field-line">
             <span>Travellers</span>

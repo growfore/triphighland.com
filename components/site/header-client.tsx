@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { NavItem } from "@/lib/site";
 import { imageUrl } from "@/lib/media";
 import SearchDialog from "./search-dialog";
@@ -12,6 +12,7 @@ import { WhatsAppIcon } from "./icons";
 
 export type HeaderLabels = {
   bookNow: string;
+  more: string;
   menu: string;
   openMenu: string;
   search: { placeholder: string; button: string; trips: string; blogs: string; empty: string; currency: string };
@@ -39,6 +40,9 @@ function Brand({ name, logo, showName, className }: { name: string; logo?: strin
     </Link>
   );
 }
+
+// Top-level items shown inline on desktop; the rest collapse into "More".
+const INLINE_ITEMS = 2;
 
 // White bar with ruled cells (the design's sub-page navbar), used site-wide.
 export default function HeaderClient({ name, logo, showName, items, trips, whatsapp, labels }: Props) {
@@ -73,9 +77,10 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
             aria-label="Primary"
             className="hidden flex-1 items-center gap-8 px-8 text-[13px] font-medium uppercase tracking-[0.04em] lg:flex"
           >
-            {items.map((item) =>
+            {items.slice(0, INLINE_ITEMS).map((item) =>
               isMega(item) ? <MegaMenu key={item.id} item={item} trips={trips} /> : <NavEntry key={item.id} item={item} />,
             )}
+            {items.length > INLINE_ITEMS && <MoreDropdown label={labels.more} items={items.slice(INLINE_ITEMS)} />}
           </nav>
 
           <div className="ml-auto hidden items-stretch lg:flex">
@@ -188,13 +193,72 @@ function NavEntry({ item }: { item: NavItem }) {
   return <NavDropdown item={item} />;
 }
 
+function NavDropdown({ item }: { item: NavItem }) {
+  return (
+    <Dropdown label={item.label} href={item.url || "#"}>
+      <div className="flex gap-10 rounded-[4px] bg-white p-7 text-left normal-case tracking-normal text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.45)]">
+        {item.children.map((group) => (
+          <div key={group.id} className="min-w-[180px]">
+            <Link
+              href={group.url || "#"}
+              className="meta text-[12px] text-ink-muted hover:text-highland-deep"
+            >
+              {group.label}
+            </Link>
+            {group.children.length > 0 && (
+              <ul className="mt-3 flex flex-col gap-2 text-[14px] font-normal">
+                {group.children.map((leaf) => (
+                  <li key={leaf.id}>
+                    <Link href={leaf.url || "#"} className="hover:text-highland-deep">
+                      {leaf.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </Dropdown>
+  );
+}
+
+// Overflow items as a single column; an item's own children sit indented
+// under it (one level is enough for a "More" list).
+function MoreDropdown({ label, items }: { label: string; items: NavItem[] }) {
+  return (
+    <Dropdown label={label}>
+      <ul className="flex min-w-[240px] flex-col rounded-[4px] bg-white py-3 text-left text-[14px] font-normal normal-case tracking-normal text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.45)]">
+        {items.map((item) => (
+          <li key={item.id}>
+            <Link href={item.url || "#"} className="block px-6 py-2 hover:text-highland-deep">
+              {item.label}
+            </Link>
+            {item.children.length > 0 && (
+              <ul className="pb-1">
+                {item.children.map((child) => (
+                  <li key={child.id}>
+                    <Link href={child.url || "#"} className="block py-1.5 pl-10 pr-6 text-ink-muted hover:text-highland-deep">
+                      {child.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </Dropdown>
+  );
+}
+
 // State-driven rather than :hover/:focus-within: after a client navigation the
 // clicked link keeps focus and the pointer stays put, which kept a CSS-only
-// panel open on the new page.
-function NavDropdown({ item }: { item: NavItem }) {
+// panel open on the new page. Without an href the trigger is a button.
+function Dropdown({ label, href, children }: { label: string; href?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const triggerRef = useRef<HTMLAnchorElement>(null);
+  const triggerRef = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
   const show = () => {
     clearTimeout(closeTimer.current);
     setOpen(true);
@@ -203,6 +267,13 @@ function NavDropdown({ item }: { item: NavItem }) {
   const hide = () => {
     closeTimer.current = setTimeout(() => setOpen(false), 120);
   };
+  const triggerContent = (
+    <>
+      {label}
+      <ChevronDownIcon strokeWidth={1.8} size={14} className={`transition ${open ? "rotate-180" : ""}`} />
+    </>
+  );
+  const triggerClass = "flex items-center gap-1.5 py-2 uppercase hover:opacity-75";
 
   return (
     <div
@@ -227,44 +298,28 @@ function NavDropdown({ item }: { item: NavItem }) {
         }
       }}
     >
-      <Link
-        ref={triggerRef}
-        href={item.url || "#"}
-        className="flex items-center gap-1.5 py-2 hover:opacity-75"
-        aria-haspopup="true"
-        aria-expanded={open}
-      >
-        {item.label}
-        <ChevronDownIcon strokeWidth={1.8} size={14} className={`transition ${open ? "rotate-180" : ""}`} />
-      </Link>
+      {href ? (
+        <Link ref={triggerRef} href={href} className={triggerClass} aria-haspopup="true" aria-expanded={open}>
+          {triggerContent}
+        </Link>
+      ) : (
+        <button
+          ref={triggerRef}
+          type="button"
+          className={`${triggerClass} font-medium tracking-[0.04em]`}
+          aria-haspopup="true"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+        >
+          {triggerContent}
+        </button>
+      )}
       <div
-        className={`absolute left-0 top-full z-40 min-w-[280px] transition ${
+        className={`absolute left-0 top-full z-40 transition ${
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-1 opacity-0"
         }`}
       >
-        <div className="flex gap-10 rounded-[4px] bg-white p-7 text-left normal-case tracking-normal text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.45)]">
-          {item.children.map((group) => (
-            <div key={group.id} className="min-w-[180px]">
-              <Link
-                href={group.url || "#"}
-                className="meta text-[12px] text-ink-muted hover:text-highland-deep"
-              >
-                {group.label}
-              </Link>
-              {group.children.length > 0 && (
-                <ul className="mt-3 flex flex-col gap-2 text-[14px] font-normal">
-                  {group.children.map((leaf) => (
-                    <li key={leaf.id}>
-                      <Link href={leaf.url || "#"} className="hover:text-highland-deep">
-                        {leaf.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
+        {children}
       </div>
     </div>
   );

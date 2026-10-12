@@ -21,6 +21,8 @@ export function getLabels(content: SiteContent) {
       excluded: tp.sectionLabels?.excluded || "Excluded",
       goodToKnow: tp.sectionLabels?.goodToKnow || "Good to know",
       addons: tp.sectionLabels?.addons || "Add-ons",
+      departures: tp.sectionLabels?.departures || "Upcoming departures",
+      routeMap: tp.sectionLabels?.routeMap || "Route map",
       duration: tp.facts?.duration || "Duration",
       difficulty: tp.facts?.difficulty || "Difficulty",
       groupSize: tp.facts?.groupSize || "Group size",

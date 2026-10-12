@@ -27,6 +27,8 @@ export default function EnquirySheet({ trips, tripSlugs, currency, whatsAppNumbe
   // The trip page's add-ons, plus the one whose card opened the sheet.
   const [addons, setAddons] = useState<AddonOption[]>([]);
   const [addon, setAddon] = useState<string | undefined>();
+  // Start date of the departure whose row opened the sheet.
+  const [startDate, setStartDate] = useState<string | undefined>();
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -44,6 +46,7 @@ export default function EnquirySheet({ trips, tripSlugs, currency, whatsAppNumbe
       }
       setAddons(Array.isArray(list) ? list : []);
       setAddon((trigger as HTMLElement).dataset.enquiryAddon || undefined);
+      setStartDate((trigger as HTMLElement).dataset.enquiryDate || undefined);
       setOpen(true);
     }
     // Capture phase: runs before next/link's handler, which skips navigation
@@ -82,6 +85,7 @@ export default function EnquirySheet({ trips, tripSlugs, currency, whatsAppNumbe
               defaultTrip={trip}
               addons={trip ? addons : undefined}
               defaultAddons={addon ? [addon] : undefined}
+              defaultStartDate={startDate}
               tripSlugs={trip ? undefined : tripSlugs}
               currency={currency}
               whatsapp={whatsappLink(whatsAppNumber, trip)}

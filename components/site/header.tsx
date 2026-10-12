@@ -22,6 +22,7 @@ export default async function Header() {
       whatsapp={whatsappLink(config.whatsAppNumber)}
       labels={{
         bookNow: nav?.bookNow || "Customize your trip",
+        more: nav?.more || "More",
         menu: nav?.menu || "Menu",
         openMenu: nav?.openMenu || "Open menu",
         search: {

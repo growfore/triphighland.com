@@ -159,6 +159,8 @@ export type TripDetail = TripSummary & {
   meals: string[];
   // Intro video URL (YouTube/Vimeo) from the dashboard; often empty.
   videoIntro?: string;
+  // Route map image picked in the dashboard; often empty.
+  routeMap?: string;
   countryId?: string | null;
   cityId?: string | null;
   tripCategoryId?: string | null;
@@ -222,6 +224,7 @@ export const getTrip = cache(async (slug: string): Promise<TripDetail | null> =>
     accommodations: parseJson<string[]>(t.accommodations, []).filter(Boolean),
     meals: parseJson<string[]>(t.meals, []).filter(Boolean),
     videoIntro: typeof t.videoIntro === "string" && t.videoIntro.trim() ? t.videoIntro.trim() : undefined,
+    routeMap: typeof t.routeMap === "string" && t.routeMap.trim() ? t.routeMap.trim() : undefined,
     countryId: t.countryId,
     cityId: t.cityId,
     tripCategoryId: t.tripCategoryId,
@@ -237,6 +240,29 @@ export const getTrip = cache(async (slug: string): Promise<TripDetail | null> =>
         order: typeof g.order === "number" ? g.order : undefined,
       })),
   };
+});
+
+/* ---------- Departures ---------- */
+
+export type Departure = { id: number; startDate: string; endDate: string; price: number | null; availableSpots: number };
+
+// A trip's upcoming fixed departures that still take bookings, soonest first.
+// No departures is a normal state; an endpoint failure reads the same.
+export const getDepartures = cache(async (activityId: number): Promise<Departure[]> => {
+  const body = await getJson<{ data?: { departures?: Raw[] } }>(
+    `/departure?activityId=${activityId}&bookable=true&page=1&limit=100`,
+  );
+  const now = Date.now();
+  return (body?.data?.departures ?? [])
+    .filter((d) => d.status === "OPEN" && Number(d.availableSpots) > 0 && new Date(d.startDate).getTime() > now)
+    .map((d) => ({
+      id: Number(d.id),
+      startDate: String(d.startDate),
+      endDate: String(d.endDate),
+      price: d.price == null ? null : Number(d.price),
+      availableSpots: Number(d.availableSpots),
+    }))
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 });
 
 /* ---------- Extras (trip add-ons) ---------- */

@@ -54,6 +54,8 @@ export type SiteContent = {
       excluded?: string;
       goodToKnow?: string;
       addons?: string;
+      departures?: string;
+      routeMap?: string;
     };
     facts?: {
       duration?: string;
@@ -76,7 +78,7 @@ export type SiteContent = {
     };
     split?: { bookWhatsApp?: string; bookNow?: string };
   };
-  nav?: { home?: string; bookNow?: string; menu?: string; openMenu?: string };
+  nav?: { home?: string; bookNow?: string; more?: string; menu?: string; openMenu?: string };
   footer?: { linksHeading?: string; copyright?: string };
   newsletter?: { placeholder?: string; button?: string; success?: string; error?: string };
   tripCard?: { currency?: string; priceOnRequest?: string };
