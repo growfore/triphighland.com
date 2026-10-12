@@ -41,12 +41,17 @@ function Brand({ name, logo, showName, className }: { name: string; logo?: strin
   );
 }
 
-// Top-level items shown inline on desktop; the rest collapse into "More".
+// Top-level items shown inline on desktop; the rest collapse into "More",
+// unless there are only a few of them, which then sit inline too.
 const INLINE_ITEMS = 2;
+const MAX_OVERFLOW_INLINE = 3;
 
 // White bar with ruled cells (the design's sub-page navbar), used site-wide.
 export default function HeaderClient({ name, logo, showName, items, trips, whatsapp, labels }: Props) {
   const pathname = usePathname();
+  const collapse = items.length - INLINE_ITEMS > MAX_OVERFLOW_INLINE;
+  const inlineItems = collapse ? items.slice(0, INLINE_ITEMS) : items;
+  const overflowItems = collapse ? items.slice(INLINE_ITEMS) : [];
   // Remember which path the menu was opened on, so navigating closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === pathname;
@@ -77,10 +82,10 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
             aria-label="Primary"
             className="hidden flex-1 items-center gap-8 px-8 text-[13px] font-medium uppercase tracking-[0.04em] lg:flex"
           >
-            {items.slice(0, INLINE_ITEMS).map((item) =>
+            {inlineItems.map((item) =>
               isMega(item) ? <MegaMenu key={item.id} item={item} trips={trips} /> : <NavEntry key={item.id} item={item} />,
             )}
-            {items.length > INLINE_ITEMS && <MoreDropdown label={labels.more} items={items.slice(INLINE_ITEMS)} />}
+            {overflowItems.length > 0 && <MoreDropdown label={labels.more} items={overflowItems} />}
           </nav>
 
           <div className="ml-auto hidden items-stretch lg:flex">

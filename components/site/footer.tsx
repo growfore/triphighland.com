@@ -91,7 +91,7 @@ export default async function Footer() {
                 {config.logo ? (
                   // Tenant logos are often SVG; next/image adds nothing for them.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imageUrl(config.logo)} alt={config.name} className="h-12 w-auto max-w-[220px] object-contain" />
+                  <img src={imageUrl(config.logo)} alt={config.name} className="h-12 w-auto max-w-[220px] object-contain brightness-0 invert" />
                 ) : (
                   <span className="display text-2xl">{config.name}</span>
                 )}
