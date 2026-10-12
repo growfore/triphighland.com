@@ -95,7 +95,7 @@ export default async function TripPage({ params }: Props) {
       ? {
           "@type": "ItemList",
           numberOfItems: trip.itinerary.length,
-          itemListElement: trip.itinerary.map((d, i) => ({ "@type": "ListItem", position: i + 1, name: `Day ${d.day}: ${d.title}` })),
+          itemListElement: trip.itinerary.map((d, i) => ({ "@type": "ListItem", position: i + 1, name: d.title})),
         }
       : undefined,
     offers:
@@ -379,11 +379,24 @@ export default async function TripPage({ params }: Props) {
             )}
             {trip.faq.flatMap((g) => g.items ?? []).length > 0 && (
               <div>
-                <h2 className="h-sub mb-9">{trip.faq.find((g) => g.title)?.title || "FAQ"}</h2>
-                <div className="border-t border-line">
-                  {trip.faq.flatMap((g) => g.items ?? []).map((f) => (
-                    <AccordionRow key={f.q} title={f.q} html={richContent(f.a)} />
-                  ))}
+                <h2 className="h-sub mb-9">Frequently Asked Questions</h2>
+                {/* A lone "Default" (or untitled) group is just the plain list — no category heading. */}
+                <div className="flex flex-col gap-12">
+                  {trip.faq
+                    .filter((g) => g.items?.length)
+                    .map((g, i, groups) => {
+                      const showTitle = g.title && !(groups.length === 1 && g.title.trim().toLowerCase() === "default");
+                      return (
+                        <div key={(g.title ?? "") + i}>
+                          {showTitle && <h3 className="mb-6 text-[19px] font-semibold lg:text-[22px]">{g.title}</h3>}
+                          <div className="border-t border-line">
+                            {g.items.map((f) => (
+                              <AccordionRow key={f.q} title={f.q} html={richContent(f.a)} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
