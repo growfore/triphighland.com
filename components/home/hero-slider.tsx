@@ -64,62 +64,73 @@ export default function HeroSlider({
           inert={k !== i}
           className={`absolute inset-0 transition-opacity duration-700 ${k === i ? "opacity-100" : "pointer-events-none opacity-0"}`}
         >
-          <Photo src={slide.image} alt={slide.title} sizes="100vw" priority={k === 0} position="50% 40%" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,.45)_0%,rgba(14,12,10,.3)_28%,rgba(14,12,10,.55)_60%,rgba(14,12,10,.85)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_55%,rgba(14,12,10,.35),transparent)]" />
+          {/* Uploads are already web-sized WebP; re-encoding only loses detail at full-screen size. */}
+          <Photo src={slide.image} alt={slide.title} sizes="100vw" priority={k === 0} position="50% 40%" original />
+          {/* Light scrim: the text sits on a solid card, so the photo only needs a soft base shade. */}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,0)_55%,rgba(14,12,10,.45)_100%)]" />
         </div>
       ))}
 
-      <div
-        aria-live={paused ? "polite" : "off"}
-        className="wrap relative z-10 flex min-h-[calc(100svh-3.5rem)] flex-col items-center justify-end pb-36 pt-24 text-center [text-shadow:0_1px_12px_rgba(14,12,10,.35)] md:justify-center md:pb-32 lg:min-h-[calc(100svh-4rem)]"
-      >
-        {eyebrow && <p className="meta mb-5 max-w-[46ch] text-[12px] text-white">{eyebrow}</p>}
-        <h1 className="display max-w-4xl text-balance text-[30px] leading-[1.1] sm:text-[clamp(34px,3.9vw,58px)]">{s.title}</h1>
-        {s.description && (
-          <p className="mx-auto mt-5 line-clamp-4 max-w-[640px] text-pretty text-base font-light text-white/90 sm:mt-7 sm:text-lg">{s.description}</p>
-        )}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link href={`/trip/${s.slug}`} className="btn-primary">
-            {viewLabel}
-          </Link>
-          <Link href={`/booking?trip=${s.slug}`} className="btn-outline-light">
-            {bookLabel}
-          </Link>
+      <div className="wrap relative z-10 flex min-h-[calc(100svh-3.5rem)] items-end pb-24 pt-24 sm:pb-12 lg:min-h-[calc(100svh-4rem)] lg:pb-16">
+        {/* Wide and short: on large screens title and copy sit side by side instead of stacking. */}
+        {/* Translucent so the photo reads through; the light blur keeps text legible over busy detail. */}
+        <div className="w-full max-w-[960px] bg-paper/75 text-ink shadow-[0_18px_48px_-12px_rgba(14,12,10,.35)] backdrop-blur-[6px] backdrop-saturate-150">
+          <div aria-live={paused ? "polite" : "off"} className="grid gap-x-10 p-6 sm:px-9 sm:py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-end">
+            <div>
+              {eyebrow && <p className="meta mb-4 text-[11px] text-ink-soft">{eyebrow}</p>}
+              <h1 className="display text-balance text-[26px] leading-[1.08] sm:text-[clamp(30px,2.6vw,40px)]">{s.title}</h1>
+            </div>
+            <div>
+              {s.description && (
+                <p className="mt-4 line-clamp-3 text-pretty text-base font-light text-ink-soft lg:mt-0">{s.description}</p>
+              )}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Link href={`/trip/${s.slug}`} className="btn-primary">
+                  {viewLabel}
+                </Link>
+                <Link href={`/booking?trip=${s.slug}`} className="btn-outline">
+                  {bookLabel}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {n > 1 && (
+            <div className="flex items-center gap-1 border-t border-ink/15 px-4 py-1 sm:px-7">
+              {slides.map((slide, k) => (
+                <button
+                  key={slide.slug}
+                  type="button"
+                  onClick={() => setI(k)}
+                  aria-label={`Show ${slide.title}`}
+                  aria-current={k === i ? "true" : undefined}
+                  // 24px hit area around a thin bar marker.
+                  className="group flex size-6 items-center justify-center"
+                >
+                  <span className="h-[3px] w-4 bg-ink/25 transition-[width,background-color] duration-300 group-hover:bg-ink-soft group-aria-current:w-7 group-aria-current:bg-ink" />
+                </button>
+              ))}
+              <span className="meta ml-auto text-[11px] tabular-nums text-ink-soft">
+                {String(i + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
+              </span>
+              <button
+                type="button"
+                onClick={() => setToggled(!paused)}
+                aria-label={paused ? "Play slideshow" : "Pause slideshow"}
+                className="flex size-8 items-center justify-center text-ink-soft transition-colors hover:text-ink"
+              >
+                {paused ? <PlayIcon size={14} fill="currentColor" /> : <PauseIcon size={14} fill="currentColor" />}
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
-      {n > 1 && (
-        <div className="absolute inset-x-0 bottom-16 z-10 flex items-center justify-center gap-1">
-          {slides.map((slide, k) => (
-            <button
-              key={slide.slug}
-              type="button"
-              onClick={() => setI(k)}
-              aria-label={`Show ${slide.title}`}
-              aria-current={k === i ? "true" : undefined}
-              // 24px hit area around a small square marker.
-              className="group flex size-6 items-center justify-center"
-            >
-              <span className="h-[3px] w-4 bg-white/45 transition-[width,background-color] duration-300 group-hover:bg-white/80 group-aria-current:w-7 group-aria-current:bg-white" />
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setToggled(!paused)}
-            aria-label={paused ? "Play slideshow" : "Pause slideshow"}
-            className="ml-2 flex size-8 items-center justify-center text-white/80 transition-colors hover:text-white"
-          >
-            {paused ? <PlayIcon size={14} fill="currentColor" /> : <PauseIcon size={14} fill="currentColor" />}
-          </button>
-        </div>
-      )}
 
       <button
         type="button"
         aria-label="Scroll down"
         onClick={() => sectionRef.current?.nextElementSibling?.scrollIntoView({ behavior: "smooth" })}
-        className="absolute inset-x-0 bottom-4 z-10 mx-auto flex size-11 items-center justify-center text-white/80 transition-colors hover:text-white motion-safe:animate-[drift_2.8s_cubic-bezier(.45,0,.55,1)_infinite]"
+        className="absolute bottom-12 right-[clamp(16px,4vw,64px)] z-10 hidden size-11 items-center justify-center text-white/85 transition-colors hover:text-white motion-safe:animate-[drift_2.8s_cubic-bezier(.45,0,.55,1)_infinite] xl:flex"
       >
         <ChevronDownIcon size={26} strokeWidth={1.6} />
       </button>
