@@ -69,7 +69,11 @@ function sanitizeHtml(html: string): string {
       }
       return ` ${lowerName}="${value.replace(/"/g, "&quot;")}"`;
     });
-    return lowerTag === "img" ? `<img${attrs} loading="lazy" decoding="async">` : `<${lowerTag}${attrs}>`;
+    if (lowerTag !== "img") return `<${lowerTag}${attrs}>`;
+    // An image the editor left without alt text is treated as decorative, so
+    // screen readers skip it instead of announcing the file URL.
+    const alt = / alt="/.test(attrs) ? "" : ' alt=""';
+    return `<img${attrs}${alt} loading="lazy" decoding="async">`;
   }).replace(/<script[\s\S]*?<\/script>/gi, "").replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 }
 

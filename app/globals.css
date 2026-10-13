@@ -97,8 +97,26 @@
     * {
         @apply border-border outline-ring/50;
     }
-    html {
-        scroll-behavior: smooth;
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+    }
+    /* One focus ring everywhere: solid, offset, visible on paper and photos.
+       Dark surfaces (.bg-night, footer, overlays) flip it to the light tint. */
+    :focus-visible {
+        outline: 2px solid var(--highland-deep);
+        outline-offset: 3px;
+    }
+    :is(.bg-night, .bg-soot, .bg-highland-deep, .bg-primary) :focus-visible {
+        outline-color: var(--highland-tint);
+    }
+    ::selection {
+        background: var(--highland-tint);
+        color: var(--ink);
+    }
+    :root {
+        accent-color: var(--highland-deep);
     }
     body {
         @apply bg-background text-foreground font-sans antialiased;
@@ -396,6 +414,16 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--ink-muted);
+    }
+}
+
+@keyframes drift {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(5px);
     }
 }
 

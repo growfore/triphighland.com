@@ -14,14 +14,15 @@ const TOP_CATEGORIES = 5;
 
 function Column({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <h2 className="meta mb-1 text-[12px] font-normal text-soot-muted">{title}</h2>
       {children}
     </div>
   );
 }
 
-const linkClass = "w-fit text-[15px] hover:text-highland";
+// py-0.5 lifts each link to a 24px target; the column gap shrinks to keep the same rhythm.
+const linkClass = "w-fit py-0.5 text-[15px] hover:text-highland";
 
 export default async function Footer() {
   const [config, groups, infoPages, categories] = await Promise.all([

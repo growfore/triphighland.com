@@ -19,7 +19,7 @@ export default async function ContactPage() {
   const whatsapp = whatsappLink(config.whatsAppNumber);
 
   const channels = [
-    ...config.phoneNumbers.map((p) => ({ label: p.label, value: p.number, href: `tel:${p.number}` })),
+    ...config.phoneNumbers.map((p) => ({ label: p.label || "Phone", value: p.number, href: `tel:${p.number}` })),
     ...(config.email ? [{ label: "Email", value: config.email, href: `mailto:${config.email}` }] : []),
     ...(whatsapp ? [{ label: "WhatsApp", value: `+${config.whatsAppNumber}`, href: whatsapp }] : []),
     ...(config.fullAddress ? [{ label: "Office", value: config.fullAddress, href: "" }] : []),
