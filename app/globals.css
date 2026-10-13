@@ -44,6 +44,8 @@
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
     --color-success: var(--success);
+    --color-success-tint: var(--success-tint);
+    --color-rose-wash: var(--rose-wash);
     --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
@@ -91,6 +93,9 @@
     --destructive: #a8322b;
     /* Included-item checks; 4.9:1 on paper. */
     --success: #2e7d4f;
+    /* Soft panels behind the included / excluded lists. */
+    --success-tint: #e8f1ea;
+    --rose-wash: #f8e9e6;
     --border: var(--line);
     --input: var(--line);
     --ring: var(--highland);

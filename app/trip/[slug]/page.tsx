@@ -283,10 +283,10 @@ export default async function TripPage({ params }: Props) {
       {/* INCLUDED / EXCLUDED — side by side on large screens when both exist */}
       {(trip.inclusions.length > 0 || trip.exclusions.length > 0) && (
         <section
-          className={`wrap grid gap-x-16 gap-y-12 py-16 lg:py-24 ${trip.inclusions.length > 0 && trip.exclusions.length > 0 ? "lg:grid-cols-2" : ""}`}
+          className={`wrap grid gap-6 py-16 lg:py-24 ${trip.inclusions.length > 0 && trip.exclusions.length > 0 ? "lg:grid-cols-2" : ""}`}
         >
           {trip.inclusions.length > 0 && (
-            <div>
+            <div className="bg-success-tint p-6 sm:p-9">
               <h2 className="h-sub text-night">{L.trip.included}</h2>
               <ul className="mt-6 flex flex-col">
                 {trip.inclusions.map((item) => (
@@ -299,7 +299,7 @@ export default async function TripPage({ params }: Props) {
             </div>
           )}
           {trip.exclusions.length > 0 && (
-            <div>
+            <div className="bg-rose-wash p-6 sm:p-9">
               <h2 className="h-sub text-night">{L.trip.excluded}</h2>
               <ul className="mt-6 flex flex-col">
                 {trip.exclusions.map((item) => (
