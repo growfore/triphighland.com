@@ -28,13 +28,18 @@ type Props = {
   labels: HeaderLabels;
 };
 
-function Brand({ name, logo, showName, className }: { name: string; logo?: string; showName: boolean; className?: string }) {
+function Brand({ name, logo, showName, className, light }: { name: string; logo?: string; showName: boolean; className?: string; light?: boolean }) {
   return (
     <Link href="/" className={`flex items-center gap-3 ${className ?? ""}`} aria-label={name}>
       {logo && (
         // Tenant logos are often SVG; next/image adds nothing for them.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl(logo)} alt={showName ? "" : name} className="h-7 w-auto max-w-[140px] object-contain" />
+        <img
+          src={imageUrl(logo)}
+          alt={showName ? "" : name}
+          // On dark panels the (usually dark) logo is flattened to solid white.
+          className={`h-7 w-auto max-w-[140px] object-contain ${light ? "brightness-0 invert" : ""}`}
+        />
       )}
       {(showName || !logo) && <span className="uppercase tracking-[0.02em]">{name}</span>}
     </Link>
@@ -151,7 +156,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
           className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-night text-paper"
         >
           <div className="flex items-center justify-between px-4 py-5">
-            <Brand name={name} logo={logo} showName={showName} className="text-[23px] font-semibold tracking-[-0.02em]" />
+            <Brand name={name} logo={logo} showName={showName} light className="text-[23px] font-semibold tracking-[-0.02em]" />
             <button
               type="button"
               aria-label="Close menu"

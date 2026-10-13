@@ -28,8 +28,6 @@ function tripsUnder(node: NavItem): NavItem[] {
   return out;
 }
 
-const placesUnder = (entry: NavItem) => entry.children.filter((c) => !tripSlug(c.url));
-
 // The auto menu nests Discover → group → place/category → city → trip; the
 // plain dropdown only has room for two of those levels.
 export function isMega(item: NavItem) {
@@ -38,32 +36,6 @@ export function isMega(item: NavItem) {
 
 // Two columns of six rows fill the panel; the rest sit behind "Explore more".
 const PANEL_TRIPS = 12;
-const MAX_PLACES = 8;
-const MOBILE_TRIPS = 6;
-
-const tripCount = (n: number) => `${n} ${n === 1 ? "trip" : "trips"}`;
-
-function PlaceChips({ entry, dark }: { entry: NavItem; dark?: boolean }) {
-  const places = placesUnder(entry);
-  if (!places.length) return null;
-  const chip = dark
-    ? "border border-white/30 px-3 py-1 text-[13px] hover:border-white"
-    : "border border-line px-3 py-1 text-[13px] hover:border-highland-deep hover:text-highland-deep";
-  return (
-    <div className="flex flex-wrap gap-2">
-      {places.slice(0, MAX_PLACES).map((p) => (
-        <Link key={p.id} href={p.url || "#"} className={chip}>
-          {p.label}
-        </Link>
-      ))}
-      {places.length > MAX_PLACES && (
-        <Link href={entry.url || "#"} className={`${chip} opacity-70`}>
-          +{places.length - MAX_PLACES} more
-        </Link>
-      )}
-    </div>
-  );
-}
 
 export default function MegaMenu({ item, trips }: { item: NavItem; trips: Record<string, MenuTrip> }) {
   const [open, setOpen] = useState(false);
@@ -172,7 +144,7 @@ export default function MegaMenu({ item, trips }: { item: NavItem; trips: Record
                   <li key={t.id}>
                     <Link href={t.url} className="group/trip flex items-center gap-4">
                       <span className="relative size-14 flex-none overflow-hidden bg-stone">
-                        <Photo src={info?.image} alt="" sizes="56px" />
+                        <Photo src={info?.image} alt="" sizes="56px" className="bg-night-raised" />
                       </span>
                       <span className="min-w-0">
                         <span className="line-clamp-2 text-[16px] leading-snug group-hover/trip:text-highland-deep">{t.label}</span>
@@ -205,83 +177,41 @@ export default function MegaMenu({ item, trips }: { item: NavItem; trips: Record
 
 // Mobile drill-down: the group (Countries / Categories) is only a small
 // toggle; the rows are the places themselves, each opening onto its trips.
+// Phone menu: every trip in one list, open by default (no tabs, no place pills).
 export function MobileMegaMenu({ item, trips }: { item: NavItem; trips: Record<string, MenuTrip> }) {
-  const [groupId, setGroupId] = useState(item.children[0]?.id);
-  const group = item.children.find((g) => g.id === groupId) ?? item.children[0];
-
+  const all = tripsUnder(item);
   return (
-    <details className="group border-b border-white/15">
+    <details open className="group border-b border-white/15">
       <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-xl font-semibold uppercase [&::-webkit-details-marker]:hidden">
         {item.label}
         <ChevronDownIcon size={20} strokeWidth={1.8} className="transition group-open:rotate-180" />
       </summary>
 
       <div className="pb-6">
-        {item.children.length > 1 && (
-          <div role="tablist" className="mb-4 flex gap-1 bg-white/10 p-1">
-            {item.children.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                role="tab"
-                aria-selected={g.id === group?.id}
-                onClick={() => setGroupId(g.id)}
-                className={`flex-1 px-3 py-2 text-[13px] font-medium ${
-                  g.id === group?.id ? "bg-paper text-night" : "text-night-muted"
-                }`}
-              >
-                {g.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <ul role="tabpanel" className="flex flex-col">
-          {group?.children.map((entry) => {
-            const entryTrips = tripsUnder(entry);
+        <ul className="flex flex-col gap-4">
+          {all.map((t) => {
+            const info = trips[tripSlug(t.url)!];
             return (
-              <li key={entry.id} className="border-t border-white/10 first:border-t-0">
-                <details className="group/entry">
-                  <summary className="flex cursor-pointer list-none items-center gap-3 py-3.5 text-base [&::-webkit-details-marker]:hidden">
-                    <span className="flex-1 font-medium">{entry.label}</span>
-                    {entryTrips.length > 0 && <span className="text-[13px] text-night-muted">{tripCount(entryTrips.length)}</span>}
-                    <ChevronDownIcon strokeWidth={1.8} size={18} className="transition group-open/entry:rotate-180" />
-                  </summary>
-                  <div className="flex flex-col gap-4 pb-5">
-                    <PlaceChips entry={entry} dark />
-                    <ul className="flex flex-col gap-3">
-                      {entryTrips.slice(0, MOBILE_TRIPS).map((t) => {
-                        const info = trips[tripSlug(t.url)!];
-                        return (
-                          <li key={t.id}>
-                            <Link href={t.url} className="flex items-center gap-3">
-                              <span className="relative size-14 flex-none overflow-hidden rounded-[4px] bg-night-raised">
-                                <Photo src={info?.image} alt="" sizes="56px" />
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block text-[15px] leading-snug">{t.label}</span>
-                                {(info?.meta || info?.price) && (
-                                  <span className="mt-0.5 block truncate text-[12px] text-night-muted">
-                                    {[info.meta, info.price && `from ${info.price}`].filter(Boolean).join(" · ")}
-                                  </span>
-                                )}
-                              </span>
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <Link href={entry.url || "#"} className="flex items-center gap-2 text-[14px] font-medium text-highland">
-                      View all {entry.label} <ArrowRightIcon strokeWidth={1.6} size={14} />
-                    </Link>
-                  </div>
-                </details>
+              <li key={t.id}>
+                <Link href={t.url} className="flex items-center gap-3">
+                  <span className="relative size-14 flex-none overflow-hidden bg-night-raised">
+                    <Photo src={info?.image} alt="" sizes="56px" className="bg-night-raised" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[15px] leading-snug">{t.label}</span>
+                    {(info?.meta || info?.price) && (
+                      <span className="mt-0.5 block truncate text-[12px] text-night-muted">
+                        {[info.meta, info.price && `from ${info.price}`].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
+                  </span>
+                </Link>
               </li>
             );
           })}
         </ul>
 
-        <Link href={item.url || "#"} className="mt-2 flex items-center gap-2 border-t border-white/10 pt-4 text-[14px] text-night-muted underline underline-offset-4">
+        <Link href={item.url || "#"} className="mt-6 flex items-center gap-2 border-t border-white/10 pt-4 text-[14px] font-medium text-highland">
           All trips <ArrowRightIcon strokeWidth={1.6} size={14} />
         </Link>
       </div>
