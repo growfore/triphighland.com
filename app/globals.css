@@ -484,6 +484,17 @@
     }
 }
 
+/* On phones the trip peek card spans the width: lift the WhatsApp button
+   above it while it's showing. */
+.fab {
+    transition: bottom 0.3s;
+}
+@media (max-width: 639px) {
+    body:has([data-trip-peek="shown"]) .fab {
+        bottom: calc(172px + env(safe-area-inset-bottom));
+    }
+}
+
 /* Two stone bands in a row read as one: drop the second band's top padding. */
 .band-stone + .band-stone > :first-child {
     padding-top: 0;

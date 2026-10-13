@@ -145,9 +145,11 @@ function Trackers({ ids }: { ids: TrackerIds }) {
 }
 
 function Tawk({ ids }: { ids: TawkIds }) {
+  // On a trip page, start the launcher above the peek card in the bottom-right. Tawk only reads
+  // customStyle before it loads, so this follows the page the visit starts on.
   return (
     <Script id="tawk" strategy="lazyOnload">
-      {`var Tawk_API=Tawk_API||{},Tawk_LoadStart=new Date();(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];s1.async=true;s1.src="https://embed.tawk.to/${ids.propertyId}/${ids.widgetId}";s1.charset="UTF-8";s1.setAttribute("crossorigin","*");s0.parentNode.insertBefore(s1,s0);})();`}
+      {`var Tawk_API=Tawk_API||{},Tawk_LoadStart=new Date();if(location.pathname.indexOf("/trip/")===0){Tawk_API.customStyle={visibility:{desktop:{position:"br",xOffset:20,yOffset:175},mobile:{position:"br",xOffset:10,yOffset:140}}};}(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];s1.async=true;s1.src="https://embed.tawk.to/${ids.propertyId}/${ids.widgetId}";s1.charset="UTF-8";s1.setAttribute("crossorigin","*");s0.parentNode.insertBefore(s1,s0);})();`}
     </Script>
   );
 }

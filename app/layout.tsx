@@ -62,8 +62,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat with a guide on WhatsApp"
-            // Bottom-left, clear of Tawk.to's launcher on the right.
-            className="fixed bottom-5 left-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-16px_rgba(0,0,0,.45)] transition hover:bg-[#1ebe5b]"
+            // Bottom-left, clear of Tawk.to's launcher on the right; .fab lifts it
+            // above the trip page's bottom bar (see globals.css).
+            className="fab fixed bottom-5 left-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-16px_rgba(0,0,0,.45)] transition hover:bg-[#1ebe5b]"
           >
             <WhatsAppIcon size={28} />
           </a>

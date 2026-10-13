@@ -36,7 +36,7 @@ export default function DayAccordion({ days, labels }: { days: ItineraryDay[]; l
         ].filter(([, v]) => v) as [string, string][];
 
         return (
-          <div key={d.day} id={`day-${d.day}`} className="scroll-mt-48 border-b border-line">
+          <div key={d.day} id={`day-${d.day}`} className="scroll-mt-24 border-b border-line">
             <button
               type="button"
               aria-expanded={isOpen}

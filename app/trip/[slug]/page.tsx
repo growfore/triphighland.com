@@ -13,6 +13,7 @@ import GalleryCarousel from "@/components/trip/gallery-carousel";
 import DayAccordion from "@/components/trip/day-accordion";
 import OverviewMore from "@/components/trip/overview-more";
 import VideoIntro from "@/components/trip/video-intro";
+import TripPeek from "@/components/trip/trip-peek";
 import { parseVideo } from "@/lib/video";
 import JsonLd from "@/components/site/json-ld";
 import { absolute, absoluteMedia, breadcrumbLd, siteUrl } from "@/lib/seo";
@@ -129,7 +130,7 @@ export default async function TripPage({ params }: Props) {
         ]}
       />
       {/* SPLIT HERO */}
-      <section className="flex flex-wrap bg-night text-white">
+      <section id="trip-hero" className="flex flex-wrap bg-night text-white">
         <div className="flex min-w-0 flex-[1_1_520px] flex-col px-4 pb-12 pt-8 sm:px-[clamp(20px,4vw,64px)] lg:min-h-[720px] lg:pb-18 lg:pt-16">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 self-start text-sm text-white/70">
             <Link href="/explore" className="transition-colors hover:text-white">
@@ -180,34 +181,6 @@ export default async function TripPage({ params }: Props) {
         </div>
       </section>
 
-      {/* SUMMARY BAR */}
-      <div className="sticky top-14 z-20 border-b border-line-soft bg-white lg:top-16">
-        <div className="wrap flex items-center gap-4 py-3 sm:gap-8">
-          <div className="min-w-0 flex-1">
-            <p className="display m-0 truncate text-[14px] sm:text-base">{trip.title}</p>
-            {/* Compact price for small screens; the full one sits beside the title from sm up. */}
-            {trip.price != null && (
-              <p className="m-0 mt-0.5 truncate text-[13px] text-ink-muted sm:hidden">
-                {L.card.from} <span className="font-semibold text-ink">{formatPrice(trip.price, L.card.currency)}</span>
-              </p>
-            )}
-          </div>
-          {trip.price != null && (
-            <p className="m-0 hidden flex-none text-sm text-ink-muted sm:block">
-              {L.card.from}{" "}
-              <span className="text-base font-semibold tracking-[-0.02em] text-ink">
-                {formatPrice(trip.price, L.card.currency)}
-                {priceRange && <> – {formatPrice(trip.maxPrice, L.card.currency)}</>}
-              </span>{" "}
-              {L.card.perPerson}
-            </p>
-          )}
-          <a href="#enquire" className="btn-primary meta min-h-11 flex-none px-5 py-2.5 text-[12px] tracking-[0.1em] sm:px-6">
-            {L.trip.talkToExpert}
-          </a>
-        </div>
-      </div>
-
       <GalleryCarousel slides={slides} />
 
       {/* HIGHLIGHTS */}
@@ -249,7 +222,7 @@ export default async function TripPage({ params }: Props) {
                 <div
                   id="route-map"
                   aria-label={L.trip.routeMap}
-                  className="min-w-0 scroll-mt-40 lg:sticky lg:top-36 lg:mt-[calc(1.1*clamp(26px,2.5vw,38px)+2.25rem)] lg:self-start"
+                  className="min-w-0 scroll-mt-24 lg:sticky lg:top-24 lg:mt-[calc(1.1*clamp(26px,2.5vw,38px)+2.25rem)] lg:self-start"
                 >
                   <RouteMap src={routeMap} alt={`${trip.title} ${L.trip.routeMap.toLowerCase()}`} />
                 </div>
@@ -427,6 +400,18 @@ export default async function TripPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      <TripPeek
+        title={trip.title}
+        from={trip.price != null ? L.card.from : undefined}
+        price={
+          trip.price != null
+            ? formatPrice(trip.price, L.card.currency) + (priceRange ? ` – ${formatPrice(trip.maxPrice, L.card.currency)}` : "")
+            : undefined
+        }
+        priceNote={L.card.perPerson}
+        cta={L.trip.talkToExpert}
+      />
     </main>
   );
 }
