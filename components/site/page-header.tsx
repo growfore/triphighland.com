@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import PlanTripCard from "./plan-trip-card";
 import type { PageHeaderFields } from "@/lib/site-content";
 import { richContent } from "@/lib/rich-content";
 import Photo from "./photo";
@@ -46,11 +47,18 @@ export default function PageHeader({
 }
 
 // pageHeaders.*.content: optional rich text shown after the page's main list.
-export function PageFooterContent({ fields }: { fields?: PageHeaderFields }) {
+// On large screens it takes the left half; the right half carries the
+// planning CTA (pinned while long copy scrolls).
+export async function PageFooterContent({ fields }: { fields?: PageHeaderFields }) {
   if (!fields?.content) return null;
   return (
     <section className="wrap pb-16 lg:pb-24">
-      <div className="rich max-w-[760px] border-t border-line pt-10" dangerouslySetInnerHTML={{ __html: richContent(fields.content) }} />
+      <div className="grid gap-x-20 gap-y-14 border-t border-line pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="rich max-w-[760px]" dangerouslySetInnerHTML={{ __html: richContent(fields.content) }} />
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <PlanTripCard image={fields.image} />
+        </div>
+      </div>
     </section>
   );
 }

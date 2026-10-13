@@ -4,6 +4,7 @@ import { getBlog, getInfoPage } from "@/lib/site";
 import { imageUrl } from "@/lib/media";
 import PageHeader from "@/components/site/page-header";
 import Article from "@/components/site/article";
+import PlanTripCard from "@/components/site/plan-trip-card";
 
 export const revalidate = 300;
 
@@ -37,7 +38,8 @@ export default async function InfoPageRoute({ params }: Props) {
   return (
     <main>
       <PageHeader title={page.title} standfirst={page.metaDescription || undefined} image={page.coverImage || undefined} />
-      <Article html={page.content ?? ""} enquiry={false} />
+      {/* Contents then the planning card in the sidebar; legal pages included. */}
+      <Article html={page.content ?? ""} enquiry={false} toc cta={<PlanTripCard image={page.coverImage} compact />} />
     </main>
   );
 }

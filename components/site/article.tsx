@@ -41,9 +41,12 @@ export default async function Article({
   aside,
   toc: showToc = false,
   enquiry = true,
+  cta,
 }: {
   html: string;
   aside?: ReactNode;
+  // Rendered under the table of contents (e.g. the planning card on info pages).
+  cta?: ReactNode;
   // Sidebar booking CTA; static info pages turn it off.
   enquiry?: boolean;
   // Show a table of contents (from h2/h3) above the CTA in the sidebar.
@@ -75,7 +78,7 @@ export default async function Article({
   const rendered = parts.map((p) => (p.type === "html" ? { ...p, html: withHeadingIds(richContent(p.html), used, toc) } : p));
   const booking = config.content.pageHeaders?.booking;
 
-  const hasAside = Boolean(aside) || (showToc && toc.length > 1) || enquiry;
+  const hasAside = Boolean(aside) || (showToc && toc.length > 1) || enquiry || Boolean(cta);
 
   return (
     <div className={`wrap grid gap-12 py-12 lg:gap-24 lg:py-20 ${hasAside ? "lg:grid-cols-[minmax(0,760px)_1fr]" : "max-w-[888px]"}`}>
@@ -95,7 +98,9 @@ export default async function Article({
       {hasAside && (
         <aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
           {aside}
-          {showToc && toc.length > 1 && <Toc items={toc} />}
+          {/* Shorter contents list when a card follows, so the pinned sidebar fits a laptop screen. */}
+          {showToc && toc.length > 1 && <Toc items={toc} compact={Boolean(cta)} />}
+          {cta}
           {!enquiry ? null : booking?.title || booking?.subtitle ? (
           <div className="rounded-[4px] bg-night p-8 text-paper">
             {booking.title && <p className="display text-xl">{booking.title}</p>}

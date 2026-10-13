@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export type TocItem = { id: string; text: string; level: 2 | 3 };
 
 // Article table of contents; highlights the heading currently in view.
-export default function Toc({ items, title = "Contents" }: { items: TocItem[]; title?: string }) {
+export default function Toc({ items, title = "Contents", compact }: { items: TocItem[]; title?: string; compact?: boolean }) {
   const [active, setActive] = useState(items[0]?.id);
 
   useEffect(() => {
@@ -25,9 +25,11 @@ export default function Toc({ items, title = "Contents" }: { items: TocItem[]; t
 
   if (!items.length) return null;
   return (
-    <nav aria-label={title} className="border-t border-ink pt-5">
+    // Hidden on phones: the sidebar stacks below the article there, where a
+    // contents list would only point back up the page.
+    <nav aria-label={title} className="hidden border-t border-ink pt-5 lg:block">
       <p className="meta text-[12px] text-ink-muted">{title}</p>
-      <ol className="mt-4 flex max-h-[50vh] flex-col gap-0.5 overflow-y-auto border-l border-line">
+      <ol className={`mt-4 flex ${compact ? "max-h-[30vh]" : "max-h-[50vh]"} flex-col gap-0.5 overflow-y-auto border-l border-line`}>
         {items.map((item) => (
           <li key={item.id}>
             <a
