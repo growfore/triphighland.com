@@ -4,8 +4,18 @@ import { apiFetch } from "@/lib/api";
 // Same-origin proxy so client components can reach the TripEleven API without
 // the key ever reaching the browser. apiFetch attaches x-api-key server-side.
 
-// Only public write endpoints are forwarded; everything else is read-only.
+// Only the endpoints the site's client components call are forwarded, so the
+// proxy can't be used as an open relay to the rest of the keyed API.
 const ALLOWED_POSTS = new Set(["email/send", "newsletter/subscribe"]);
+const ALLOWED_GETS = new Set(["activity", "blogs/published", "extras"]);
+
+function allowedGet(path: string[]): boolean {
+  if (path.some((p) => p === "" || p === "." || p === "..")) return false;
+  const joined = path.join("/");
+  if (ALLOWED_GETS.has(joined)) return true;
+  // /activity/slug/:slug, used by the enquiry form to prefill a trip.
+  return path.length === 3 && path[0] === "activity" && path[1] === "slug";
+}
 
 type Params = { params: Promise<{ path: string[] }> };
 
@@ -28,21 +38,23 @@ function emailPayload(raw: string): string | null {
   return JSON.stringify(Object.fromEntries(EMAIL_FIELDS.filter((k) => body[k] != null).map((k) => [k, body[k]])));
 }
 
-function relay(res: Response) {
-  return new Response(res.body, {
-    status: res.status,
-    headers: {
-      "content-type": res.headers.get("content-type") ?? "application/json",
-    },
+function relay(res: Response, cacheControl?: string) {
+  const headers = new Headers({
+    "content-type": res.headers.get("content-type") ?? "application/json",
   });
+  if (cacheControl && res.ok) headers.set("cache-control", cacheControl);
+  return new Response(res.body, { status: res.status, headers });
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { path } = await params;
-  const res = await apiFetch(`/${path.join("/")}${req.nextUrl.search}`, {
-    cache: "no-store",
+  if (!allowedGet(path)) {
+    return Response.json({ message: "Not found" }, { status: 404 });
+  }
+  const res = await apiFetch(`/${path.map(encodeURIComponent).join("/")}${req.nextUrl.search}`, {
+    next: { revalidate: 60 },
   });
-  return relay(res);
+  return relay(res, "public, max-age=0, s-maxage=60, stale-while-revalidate=300");
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
