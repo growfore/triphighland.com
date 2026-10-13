@@ -28,7 +28,7 @@ type Props = {
   labels: HeaderLabels;
 };
 
-function Brand({ name, logo, showName, className, light }: { name: string; logo?: string; showName: boolean; className?: string; light?: boolean }) {
+function Brand({ name, logo, showName, className, logoClassName = "h-7", light }: { name: string; logo?: string; showName: boolean; className?: string; logoClassName?: string; light?: boolean }) {
   return (
     <Link href="/" className={`flex items-center gap-3 ${className ?? ""}`} aria-label={name}>
       {logo && (
@@ -38,7 +38,7 @@ function Brand({ name, logo, showName, className, light }: { name: string; logo?
           src={imageUrl(logo)}
           alt={showName ? "" : name}
           // On dark panels the (usually dark) logo is flattened to solid white.
-          className={`h-7 w-auto max-w-[140px] object-contain ${light ? "brightness-0 invert" : ""}`}
+          className={`${logoClassName} w-auto object-contain ${light ? "brightness-0 invert" : ""}`}
         />
       )}
       {(showName || !logo) && <span className="uppercase tracking-[0.02em]">{name}</span>}
@@ -80,6 +80,8 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
             name={name}
             logo={logo}
             showName={showName}
+            // Fills the bar, leaving a few pixels top and bottom.
+            logoClassName="h-12 lg:h-14"
             className="px-4 text-[17px] font-semibold tracking-[-0.02em] sm:px-[clamp(20px,3vw,40px)] lg:border-r lg:border-line-soft lg:text-lg"
           />
 
