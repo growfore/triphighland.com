@@ -148,46 +148,46 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
 
       {searchOpen && <SearchDialog onClose={() => setSearchOpen(false)} labels={labels.search} />}
 
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={labels.menu}
-          className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-night text-paper"
-        >
-          <div className="flex items-center justify-between px-4 py-5">
-            <Brand name={name} logo={logo} showName={showName} light className="text-[23px] font-semibold tracking-[-0.02em]" />
-            <button
-              type="button"
-              aria-label="Close menu"
-              onClick={() => setOpen(false)}
-              className="flex size-11 items-center justify-center border border-white/40"
-            >
-              <XIcon size={20} strokeWidth={1.8} />
-            </button>
-          </div>
-          <nav aria-label="Mobile" className="flex flex-1 flex-col px-4 pb-10">
-            {items.map((item) =>
-              isMega(item) ? (
-                <MobileMegaMenu key={item.id} item={item} trips={trips} />
-              ) : (
-                <MobileEntry key={item.id} item={item} />
-              ),
-            )}
-            <div className="mt-auto flex flex-col gap-3 pt-10">
-              <Link href="/design-your-trip" className="btn-primary">
-                {labels.bookNow}
-              </Link>
-              {whatsapp && (
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-outline-light">
-                  <WhatsAppIcon size={18} />
-                  WhatsApp
-                </a>
-              )}
-            </div>
-          </nav>
+      {/* Always rendered (hidden until opened) so the menu's links ship in the server HTML. */}
+      <div
+        hidden={!open}
+        role="dialog"
+        aria-modal="true"
+        aria-label={labels.menu}
+        className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-night text-paper"
+      >
+        <div className="flex items-center justify-between px-4 py-5">
+          <Brand name={name} logo={logo} showName={showName} light className="text-[23px] font-semibold tracking-[-0.02em]" />
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="flex size-11 items-center justify-center border border-white/40"
+          >
+            <XIcon size={20} strokeWidth={1.8} />
+          </button>
         </div>
-      )}
+        <nav aria-label="Mobile" className="flex flex-1 flex-col px-4 pb-10">
+          {items.map((item) =>
+            isMega(item) ? (
+              <MobileMegaMenu key={item.id} item={item} trips={trips} />
+            ) : (
+              <MobileEntry key={item.id} item={item} />
+            ),
+          )}
+          <div className="mt-auto flex flex-col gap-3 pt-10">
+            <Link href="/design-your-trip" className="btn-primary">
+              {labels.bookNow}
+            </Link>
+            {whatsapp && (
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-outline-light">
+                <WhatsAppIcon size={18} />
+                WhatsApp
+              </a>
+            )}
+          </div>
+        </nav>
+      </div>
     </>
   );
 }
