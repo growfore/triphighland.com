@@ -159,7 +159,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
         className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-night text-paper"
       >
         <div className="flex items-center justify-between px-4 py-5">
-          <Brand name={name} logo={logo} showName={showName} light className="text-[23px] font-semibold tracking-[-0.02em]" />
+          <Brand name={name} logo={logo} showName={showName} light logoClassName="h-12" className="text-[23px] font-semibold tracking-[-0.02em]" />
           <button
             type="button"
             aria-label="Close menu"
