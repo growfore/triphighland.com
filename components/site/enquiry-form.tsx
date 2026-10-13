@@ -30,9 +30,17 @@ type Props = {
   labels: Labels["trip"];
 };
 
-function seasons(): string[] {
-  const year = new Date().getFullYear();
-  return [year, year + 1].flatMap((y) => [`Spring ${y}`, `Summer ${y}`, `Autumn ${y}`, `Winter ${y}`]);
+// Today as YYYY-MM-DD in the visitor's zone: the earliest date the pickers allow.
+function today(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// "2027-04-10" → "10 Apr 2027" for the email and WhatsApp text.
+function readableDate(value?: string): string | undefined {
+  if (!value) return undefined;
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 // shadcn Select styled as the form's underlined dark field. Radix renders a
@@ -68,7 +76,6 @@ function FieldSelect({
 }
 
 const HELP_ME_CHOOSE = "Help me choose";
-const NOT_SURE = "Not sure yet";
 
 // The tenant's add-on catalogue, fetched once per page through the /api proxy.
 let extrasCatalogue: Promise<{ id: number; name: string; price?: number | null }[]> | null = null;
@@ -205,8 +212,8 @@ export default function EnquiryForm({
       ["Email", data.email],
       ["Phone", data.phone],
       ["Journey", journey],
-      ["When", data.when === NOT_SURE ? undefined : data.when],
-      ["Start date", data.startDate],
+      ["Preferred date", readableDate(data.preferredDate)],
+      ["Start date", readableDate(data.startDate)],
       ["Travellers", data.travellers],
       ["Add-ons", chosenAddons.join(", ")],
       ["Message", data.message],
@@ -295,16 +302,25 @@ export default function EnquiryForm({
               onValueChange={onJourneyChange}
             />
           </label>
+          {/* Optional: an empty date reads as "not sure yet". min is the visitor's own today,
+              which can differ from the server's near midnight, hence suppressHydrationWarning. */}
           <label className="field-line">
-            When
-            <FieldSelect name="when" defaultValue={NOT_SURE} options={[NOT_SURE, ...seasons()]} />
+            Preferred date
+            <input
+              name="preferredDate"
+              type="date"
+              min={today()}
+              defaultValue={defaultStartDate}
+              suppressHydrationWarning
+              style={{ colorScheme: "dark" }}
+            />
           </label>
         </>
       ) : (
         <>
           <label className="field-line">
             Start date
-            <input name="startDate" type="date" defaultValue={defaultStartDate} style={{ colorScheme: "dark" }} />
+            <input name="startDate" type="date" min={today()} defaultValue={defaultStartDate} suppressHydrationWarning style={{ colorScheme: "dark" }} />
           </label>
           <div className="field-line">
             <span>Travellers</span>
