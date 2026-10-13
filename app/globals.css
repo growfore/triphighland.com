@@ -43,6 +43,7 @@
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
+    --color-success: var(--success);
     --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
@@ -88,6 +89,8 @@
     --accent: var(--highland);
     --accent-foreground: var(--ink);
     --destructive: #a8322b;
+    /* Included-item checks; 4.9:1 on paper. */
+    --success: #2e7d4f;
     --border: var(--line);
     --input: var(--line);
     --ring: var(--highland);

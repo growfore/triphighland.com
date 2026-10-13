@@ -237,8 +237,24 @@ export default async function TripPage({ params }: Props) {
       {trip.itinerary.length > 0 && (
         <section id="itinerary" className="band-stone bg-[#ECEAE3]">
           <div className="wrap pb-16 pt-14 lg:pb-28 lg:pt-25">
-            <h2 className="h-sub text-night mb-9">{L.trip.itinerary}</h2>
-            <DayAccordion days={trip.itinerary} labels={L.trip} />
+            {/* With a route map, days and map sit side by side on large screens and the
+                map stays pinned below the sticky trip bar while the days scroll. */}
+            <div className={routeMap ? "grid gap-x-14 gap-y-14 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]" : ""}>
+              <div className="min-w-0">
+                <h2 className="h-sub text-night mb-9">{L.trip.itinerary}</h2>
+                <DayAccordion days={trip.itinerary} labels={L.trip} />
+              </div>
+              {routeMap && (
+                // lg:mt matches the Itinerary heading block so the map lines up with the first day.
+                <div
+                  id="route-map"
+                  aria-label={L.trip.routeMap}
+                  className="min-w-0 scroll-mt-40 lg:sticky lg:top-36 lg:mt-[calc(1.1*clamp(26px,2.5vw,38px)+2.25rem)] lg:self-start"
+                >
+                  <RouteMap src={routeMap} alt={`${trip.title} ${L.trip.routeMap.toLowerCase()}`} />
+                </div>
+              )}
+            </div>
 
             {L.trip.note && (
               <div className="mt-16 flex flex-wrap items-center justify-between gap-8 bg-highland p-8 text-[#0E1F2E] sm:p-[clamp(40px,5vw,64px)]">
@@ -255,20 +271,9 @@ export default async function TripPage({ params }: Props) {
       )}
 
       {/* ROUTE MAP — natural aspect ratio, never cropped; opens full size */}
-      {routeMap && (
-        <section id="route-map" className="wrap py-16 lg:py-24">
-          <h2 className="h-sub text-night">{L.trip.routeMap}</h2>
-          <a href={routeMap} target="_blank" rel="noreferrer" className="mt-9 block bg-stone">
-            <Image
-              src={routeMap}
-              alt={`${trip.title} ${L.trip.routeMap.toLowerCase()}`}
-              width={0}
-              height={0}
-              sizes="(min-width: 1440px) 1400px, 100vw"
-              unoptimized={!isApiMedia(routeMap)}
-              className="h-auto w-full"
-            />
-          </a>
+      {routeMap && trip.itinerary.length === 0 && (
+        <section id="route-map" aria-label={L.trip.routeMap} className="wrap py-16 lg:py-24">
+          <RouteMap src={routeMap} alt={`${trip.title} ${L.trip.routeMap.toLowerCase()}`} />
         </section>
       )}
 
@@ -302,16 +307,18 @@ export default async function TripPage({ params }: Props) {
         </section>
       )}
 
-      {/* INCLUDED / EXCLUDED — stacked */}
+      {/* INCLUDED / EXCLUDED — side by side on large screens when both exist */}
       {(trip.inclusions.length > 0 || trip.exclusions.length > 0) && (
-        <section className="wrap flex max-w-[1440px] flex-col gap-12 py-16 lg:py-24">
+        <section
+          className={`wrap grid gap-x-16 gap-y-12 py-16 lg:py-24 ${trip.inclusions.length > 0 && trip.exclusions.length > 0 ? "lg:grid-cols-2" : ""}`}
+        >
           {trip.inclusions.length > 0 && (
             <div>
               <h2 className="h-sub text-night">{L.trip.included}</h2>
               <ul className="mt-6 flex flex-col">
                 {trip.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
-                    <CheckIcon strokeWidth={2} size={20} className="mt-1 flex-none text-highland-deep" />
+                    <CheckIcon strokeWidth={2.2} size={20} className="mt-1 flex-none text-success" />
                     {item}
                   </li>
                 ))}
@@ -324,7 +331,7 @@ export default async function TripPage({ params }: Props) {
               <ul className="mt-6 flex flex-col">
                 {trip.exclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
-                    <XIcon strokeWidth={1.8} size={20} className="mt-1 flex-none text-ink-muted" />
+                    <XIcon strokeWidth={2.2} size={20} className="mt-1 flex-none text-destructive" />
                     {item}
                   </li>
                 ))}
@@ -428,6 +435,23 @@ export default async function TripPage({ params }: Props) {
 // they don't shift a day for the server's or visitor's zone.
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
+// Route map at its natural aspect ratio, never cropped; opens full size.
+function RouteMap({ src, alt }: { src: string; alt: string }) {
+  return (
+    <a href={src} target="_blank" rel="noreferrer" className="block bg-white">
+      <Image
+        src={src}
+        alt={alt}
+        width={0}
+        height={0}
+        sizes="(min-width: 1024px) 45vw, 100vw"
+        unoptimized={!isApiMedia(src)}
+        className="h-auto w-full"
+      />
+    </a>
+  );
 }
 
 // Accordion row matching the day-by-day itinerary rows.
