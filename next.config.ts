@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
     // optimised copy can be reused for 31 days instead of re-encoding the
     // original after the 4-hour default.
     minimumCacheTTL: 2678400,
+    // Uploads arrive already compressed as WebP; re-encoding them at the default
+    // 75 compounds the artifacts, so photos use 90 (see components/site/photo.tsx).
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "http",

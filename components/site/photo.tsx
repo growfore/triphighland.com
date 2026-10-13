@@ -25,6 +25,7 @@ export default function Photo({ src, alt, sizes, className, priority, position }
       fill
       sizes={sizes}
       priority={priority}
+      quality={90}
       // Tenants may paste images from any host; only API media is optimised.
       unoptimized={!isApiMedia(url)}
       className={cn("object-cover", className)}
