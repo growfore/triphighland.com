@@ -39,7 +39,7 @@ export default function HeroSlider({
 
   useEffect(() => {
     if (n < 2 || paused || held) return;
-    const t = setInterval(() => setI((x) => (x + 1) % n), 5000);
+    const t = setInterval(() => setI((x) => (x + 1) % n), 3000);
     return () => clearInterval(t);
   }, [n, paused, held]);
 
