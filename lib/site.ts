@@ -34,6 +34,14 @@ function parseJson<T>(value: unknown, fallback: T): T {
   }
 }
 
+// Dashboard numbers are stored with the country code but no "+" (e.g.
+// 9779846382420); show and dial them in international form.
+function intlNumber(value: unknown): string {
+  const n = String(value ?? "").trim();
+  if (!n || n.startsWith("+")) return n;
+  return n.startsWith("00") ? `+${n.slice(2)}` : `+${n}`;
+}
+
 /* ---------- Site config ---------- */
 
 export type SiteConfig = {
@@ -93,7 +101,7 @@ export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
         : String(c.whatsAppNumber ?? "").replace(/\D/g, "") || undefined,
     phoneNumbers: (Array.isArray(c.phoneNumbers) ? c.phoneNumbers : []).flatMap(
       (entry: Record<string, string>) =>
-        Object.entries(entry).map(([label, number]) => ({ label, number })),
+        Object.entries(entry).map(([label, number]) => ({ label, number: intlNumber(number) })),
     ),
     openHours: c.openHours || undefined,
     experience: c.experience || undefined,
