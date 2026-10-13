@@ -214,7 +214,7 @@ export default async function TripPage({ params }: Props) {
       {trip.highlights.length > 0 && (
         <section className="wrap py-16 lg:py-28">
           <h2 className="h-sub">{L.trip.highlights}</h2>
-          <ul className="mt-8 max-w-[860px] list-disc space-y-2.5 pl-5 text-base leading-relaxed marker:text-highland-deep sm:text-[17px]">
+          <ul className="mt-8 list-disc space-y-2.5 pl-5 text-base leading-relaxed marker:text-highland-deep sm:text-[17px]">
             {trip.highlights.map((h) => (
               <li key={h} className="pl-1">
                 {h}
@@ -308,7 +308,7 @@ export default async function TripPage({ params }: Props) {
           {trip.inclusions.length > 0 && (
             <div>
               <h2 className="h-sub">{L.trip.included}</h2>
-              <ul className="mt-6 flex max-w-[860px] flex-col">
+              <ul className="mt-6 flex flex-col">
                 {trip.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
                     <CheckIcon strokeWidth={2} size={20} className="mt-1 flex-none text-highland-deep" />
@@ -321,7 +321,7 @@ export default async function TripPage({ params }: Props) {
           {trip.exclusions.length > 0 && (
             <div>
               <h2 className="h-sub">{L.trip.excluded}</h2>
-              <ul className="mt-6 flex max-w-[860px] flex-col">
+              <ul className="mt-6 flex flex-col">
                 {trip.exclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
                     <XIcon strokeWidth={1.8} size={20} className="mt-1 flex-none text-ink-muted" />
@@ -440,7 +440,7 @@ function AccordionRow({ title, html }: { title: string; html: string }) {
           <ChevronDownIcon size={26} strokeWidth={1.6} />
         </span>
       </summary>
-      <div className="rich max-w-[860px] pb-8 pt-1" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="rich pb-8 pt-1 text-base sm:text-[17px]" dangerouslySetInnerHTML={{ __html: html }} />
     </details>
   );
 }
