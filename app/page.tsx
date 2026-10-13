@@ -97,9 +97,10 @@ export default async function HomePage() {
     trips,
     total,
     groups,
-    categories,
+    // Only items ticked "Show on homepage" in the dashboard; a missing flag counts as shown.
+    categories: categories.filter((c) => c.showOnHomepage !== false),
     // Cities only; countries are not shown on the homepage.
-    destinations: cities.map((c) => ({ key: `city:${c.cityHandle}`, name: c.cityName, image: c.cityImage, href: `/explore?city=${c.cityHandle}` })),
+    destinations: cities.filter((c) => c.showOnHomepage !== false).map((c) => ({ key: `city:${c.cityHandle}`, name: c.cityName, image: c.cityImage, href: `/explore?city=${c.cityHandle}` })),
     testimonials,
     testimonialTotal,
     guide: team.flatMap((d) => d.members).find((m) => m.image) ?? team[0]?.members[0],

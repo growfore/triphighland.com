@@ -285,9 +285,10 @@ export const getExtras = cache(async (): Promise<Extra[]> => {
 
 /* ---------- Taxonomy ---------- */
 
-export type Category = { id: string; categoryHandle: string; categoryName: string; categoryImage?: string };
-export type Country = { id: string; countryHandle: string; countryName: string; countryImage?: string };
-export type City = { id: string; cityHandle: string; cityName: string; cityImage?: string };
+// showOnHomepage is the dashboard's "Show on homepage" toggle for each item.
+export type Category = { id: string; categoryHandle: string; categoryName: string; categoryImage?: string; showOnHomepage?: boolean };
+export type Country = { id: string; countryHandle: string; countryName: string; countryImage?: string; showOnHomepage?: boolean };
+export type City = { id: string; cityHandle: string; cityName: string; cityImage?: string; showOnHomepage?: boolean };
 
 export const getCategories = cache(async (): Promise<Category[]> => {
   const body = await getJson<{ data?: { tripCategories?: Category[] } }>("/trip-category?page=1&limit=100");
