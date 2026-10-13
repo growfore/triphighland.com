@@ -33,6 +33,7 @@ export function getLabels(content: SiteContent) {
       languages: tp.facts?.languages || "Languages",
       endPoint: tp.facts?.endPoint || "End point",
       atAGlance: "At a glance",
+      similarTrips: "You might also like",
       note: tp.sidebar?.note,
       bookNow: tp.sidebar?.bookNow || tp.split?.bookNow || "Send enquiry",
       bookWhatsApp: tp.sidebar?.bookWhatsApp || tp.split?.bookWhatsApp || "WhatsApp",

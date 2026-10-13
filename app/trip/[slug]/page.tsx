@@ -7,7 +7,7 @@ import { formatAltitude, formatGrade, formatPrice, imageUrl, isApiMedia, stripHt
 import { getLabels } from "@/lib/labels";
 import { plainContent, richContent } from "@/lib/rich-content";
 import Photo from "@/components/site/photo";
-import TripCard from "@/components/site/trip-card";
+import TripCard, { PriceFrom, tripMeta } from "@/components/site/trip-card";
 import { BedDoubleIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, FlagIcon, LanguagesIcon, MapPinIcon, MountainIcon, SlidersHorizontalIcon, UserIcon, UtensilsIcon, XIcon } from "lucide-react";
 import GalleryCarousel from "@/components/trip/gallery-carousel";
 import DayAccordion from "@/components/trip/day-accordion";
@@ -62,6 +62,8 @@ export default async function TripPage({ params }: Props) {
   const country = countries.find((c) => c.id === trip.countryId);
   const city = cities.find((c) => c.id === trip.cityId);
   const related = trips.filter((t) => t.slug !== trip.slug).slice(0, 3);
+  const faqCount = trip.faq.flatMap((g) => g.items ?? []).length;
+  const hasInfo = trip.additionalInfo.length > 0 || faqCount > 0;
   const L = getLabels(config.content);
   const overviewText = plainContent(trip.overview);
 
@@ -208,7 +210,7 @@ export default async function TripPage({ params }: Props) {
 
       {/* DAY BY DAY */}
       {trip.itinerary.length > 0 && (
-        <section id="itinerary" className="band-stone bg-[#ECEAE3]">
+        <section id="itinerary" className="bg-white">
           <div className="wrap pb-16 pt-14 lg:pb-28 lg:pt-25">
             {/* With a route map, days and map sit side by side on large screens and the
                 map stays pinned below the sticky trip bar while the days scroll. */}
@@ -348,55 +350,82 @@ export default async function TripPage({ params }: Props) {
         </section>
       )}
 
-      {/* GOOD TO KNOW + FAQ — stacked accordions, styled like the itinerary */}
-      {(trip.additionalInfo.length > 0 || trip.faq.flatMap((g) => g.items ?? []).length > 0) && (
-        <section className="band-stone bg-[#ECEAE3]">
-          <div className="wrap flex flex-col gap-16 py-16 lg:py-24">
-            {trip.additionalInfo.length > 0 && (
-              <div>
-                <h2 className="h-sub text-night mb-9">{L.trip.goodToKnow}</h2>
-                <div className="border-t border-line">
-                  {trip.additionalInfo.map((info) => (
-                    <AccordionRow key={info.title} title={info.title} html={richContent(info.description)} />
-                  ))}
-                </div>
+      {/* GOOD TO KNOW + FAQ (left half) beside SIMILAR TRIPS (right) */}
+      {(hasInfo || related.length > 0) && (
+        <section className="bg-white">
+          <div className={`wrap grid gap-x-12 gap-y-20 py-16 xl:gap-x-16 lg:py-24 ${hasInfo && related.length > 0 ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)]" : ""}`}>
+            {hasInfo && (
+              <div className="flex min-w-0 flex-col gap-16">
+                {trip.additionalInfo.length > 0 && (
+                  <div>
+                    <h2 className="h-sub text-night mb-9">{L.trip.goodToKnow}</h2>
+                    <div className="border-t border-line">
+                      {trip.additionalInfo.map((info) => (
+                        <AccordionRow key={info.title} title={info.title} html={richContent(info.description)} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {faqCount > 0 && (
+                  <div>
+                    <h2 className="h-sub text-night mb-9">Frequently Asked Questions</h2>
+                    {/* A lone "Default" (or untitled) group is just the plain list — no category heading. */}
+                    <div className="flex flex-col gap-12">
+                      {trip.faq
+                        .filter((g) => g.items?.length)
+                        .map((g, i, groups) => {
+                          const showTitle = g.title && !(groups.length === 1 && g.title.trim().toLowerCase() === "default");
+                          return (
+                            <div key={(g.title ?? "") + i}>
+                              {showTitle && <h3 className="mb-6 text-[19px] font-semibold lg:text-[22px]">{g.title}</h3>}
+                              <div className="border-t border-line">
+                                {g.items.map((f) => (
+                                  <AccordionRow key={f.q} title={f.q} html={richContent(f.a)} level={showTitle ? 4 : 3} />
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-            {trip.faq.flatMap((g) => g.items ?? []).length > 0 && (
-              <div>
-                <h2 className="h-sub text-night mb-9">Frequently Asked Questions</h2>
-                {/* A lone "Default" (or untitled) group is just the plain list — no category heading. */}
-                <div className="flex flex-col gap-12">
-                  {trip.faq
-                    .filter((g) => g.items?.length)
-                    .map((g, i, groups) => {
-                      const showTitle = g.title && !(groups.length === 1 && g.title.trim().toLowerCase() === "default");
-                      return (
-                        <div key={(g.title ?? "") + i}>
-                          {showTitle && <h3 className="mb-6 text-[19px] font-semibold lg:text-[22px]">{g.title}</h3>}
-                          <div className="border-t border-line">
-                            {g.items.map((f) => (
-                              <AccordionRow key={f.q} title={f.q} html={richContent(f.a)} />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
-      {/* RELATED */}
-      {related.length > 0 && (
-        <section className="wrap py-16 lg:py-28">
-          <h2 className="h-sub text-night mb-10 lg:mb-12">{config.content.sections?.featured?.title || config.content.pageHeaders?.explore?.title || "Explore"}</h2>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {related.map((t) => (
-              <TripCard key={t.id} trip={t} labels={L.card} size="md" />
-            ))}
+            {related.length > 0 && (
+              <aside className="min-w-0">
+                {/* Sticks beside the accordions so it stays in view while reading them. */}
+                <div className={hasInfo ? "lg:sticky lg:top-24" : ""}>
+                  <h2 className="h-sub text-night mb-9">{L.trip.similarTrips}</h2>
+                  {hasInfo ? (
+                    <ul className="border-t border-line">
+                      {related.map((t) => (
+                        <li key={t.id} className="border-b border-line">
+                          <Link href={`/trip/${t.slug}`} className="ht-card group flex gap-5 py-5 text-ink sm:gap-6 lg:flex-col lg:gap-4 lg:py-6">
+                            <div className="relative aspect-[4/5] w-28 flex-none overflow-hidden bg-stone sm:w-36 lg:aspect-[3/2] lg:w-full">
+                              <Photo src={t.images[0]} alt={t.title} sizes="(min-width: 1024px) 30vw, 144px" />
+                            </div>
+                            <div className="flex min-w-0 flex-col">
+                              <div className="meta text-[12px] text-ink-muted">{tripMeta(t)}</div>
+                              <h3 className="display mt-2 text-[19px] leading-[1.2] group-hover:text-highland-deep sm:text-[21px]">{t.title}</h3>
+                              <div className="mt-auto pt-4">
+                                <PriceFrom price={t.price} labels={L.card} />
+                              </div>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {related.map((t) => (
+                        <TripCard key={t.id} trip={t} labels={L.card} size="md" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </aside>
+            )}
           </div>
         </section>
       )}
@@ -440,16 +469,18 @@ function RouteMap({ src, alt }: { src: string; alt: string }) {
 }
 
 // Accordion row matching the day-by-day itinerary rows.
-function AccordionRow({ title, html }: { title: string; html: string }) {
+// `level` keeps the outline valid: rows sit under an h2, or under an h3 FAQ group title.
+function AccordionRow({ title, html, level = 3 }: { title: string; html: string; level?: 3 | 4 }) {
+  const Heading = level === 3 ? "h3" : "h4";
   return (
     <details className="group border-b border-line">
-      <summary className="flex cursor-pointer list-none items-center gap-4 py-5 transition-colors hover:bg-[#E4E1D8] sm:py-6 [&::-webkit-details-marker]:hidden">
-        <span className="h-row flex-1 text-base sm:text-[clamp(17px,1.4vw,21px)]">{title}</span>
+      <summary className="flex cursor-pointer list-none items-center gap-4 px-3 py-5 transition-colors hover:bg-paper sm:px-5 sm:py-6 [&::-webkit-details-marker]:hidden">
+        <Heading className="h-row flex-1 text-base sm:text-[clamp(17px,1.4vw,21px)]">{title}</Heading>
         <span className="flex size-11 flex-none items-center justify-center transition-transform group-open:rotate-180">
           <ChevronDownIcon size={26} strokeWidth={1.6} />
         </span>
       </summary>
-      <div className="rich pb-8 pt-1 text-base sm:text-[17px]" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="rich rich-nested px-3 pb-8 pt-1 text-base sm:px-5 sm:text-[17px]" dangerouslySetInnerHTML={{ __html: html }} />
     </details>
   );
 }

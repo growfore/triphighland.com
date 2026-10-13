@@ -76,7 +76,7 @@
     --soot: #141210;
     --soot-muted: #a39c91;
 
-    --background: var(--paper);
+    --background: #ffffff;
     --foreground: var(--ink);
     --card: #ffffff;
     --card-foreground: var(--ink);
@@ -413,6 +413,16 @@
     .rich h3 {
         font-size: 19px;
     }
+    /* Inside an accordion the row title is the heading: CMS headings in the
+       body drop to body size, sentence case, so they never outrank it. */
+    .rich-nested :is(h2, h3, h4) {
+        font-size: 1em;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        line-height: 1.4;
+        margin-top: 1.6em;
+    }
     .rich a {
         color: var(--highland-deep);
         text-decoration: underline;
@@ -505,12 +515,14 @@
     .rich :is(td, th) > * + * {
         margin-top: 0.5em;
     }
-    /* Header cells: brand blue band, whether the editor used <th> or a first <tr>. */
+    /* Header cells: light blue band (the row-hover tint). The CMS editor emits
+       no <th>/<thead>: its header is the first <tbody> row with bold cells. */
     .rich th,
-    .rich thead td {
-        background: var(--highland-deep);
-        border-color: var(--highland-deep);
-        color: #fff;
+    .rich thead td,
+    .rich tbody > tr:first-child:has(strong, b) > td {
+        background: var(--highland-tint);
+        border-color: var(--line-soft);
+        color: var(--night);
         font-weight: 600;
         font-size: 15px;
     }

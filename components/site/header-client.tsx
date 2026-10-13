@@ -74,7 +74,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white text-ink">
+      <header className="sticky top-0 z-30 border-b border-line-soft bg-white text-ink">
         <div className="flex h-14 items-stretch lg:h-16">
           <Brand
             name={name}
