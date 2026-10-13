@@ -130,7 +130,17 @@
     body {
         @apply bg-background text-foreground font-sans antialiased;
         font-size: 16px;
-        line-height: 1.55;
+        line-height: 1.6;
+        /* Inter Tight is spaced for display sizes; open it slightly for text. */
+        letter-spacing: 0.006em;
+        font-kerning: normal;
+    }
+    /* Avoid one-word last lines in running copy. */
+    p,
+    li,
+    blockquote,
+    figcaption {
+        text-wrap: pretty;
     }
     /* Headings: Archivo Bold, sentence case (editorial, Lonely Planet-like).
        Only hero titles (.display-hero) and accordion rows (.h-row) go uppercase. */
@@ -142,7 +152,8 @@
     h6 {
         font-family: var(--font-display);
         font-weight: 700;
-        letter-spacing: -0.015em;
+        /* Size-aware tracking: ~0 at 16px, about -0.015em at 48px. */
+        letter-spacing: calc(0.3px - 0.022em);
     }
     /* Emphasis is weight contrast, not italics. */
     em {
@@ -170,8 +181,8 @@
     .display {
         font-family: var(--font-display);
         font-weight: 700;
-        line-height: 1.12;
-        letter-spacing: -0.015em;
+        line-height: 1.15;
+        letter-spacing: calc(0.3px - 0.022em);
         text-wrap: balance;
     }
     /* Hero titles: condensed, heavy, uppercase — the one loud voice per page. */
@@ -181,23 +192,24 @@
         font-stretch: 62%;
         font-variation-settings: "wdth" 62;
         line-height: 0.95;
-        letter-spacing: -0.005em;
+        /* Condensed capitals crowd; a hair of tracking separates them. */
+        letter-spacing: 0.008em;
         text-transform: uppercase;
         text-wrap: balance;
     }
     .h-section {
         font-family: var(--font-display);
         font-weight: 700;
-        line-height: 1.08;
-        letter-spacing: -0.025em;
+        line-height: 1.1;
+        letter-spacing: calc(0.4px - 0.03em);
         font-size: clamp(30px, 3.2vw, 48px);
         text-wrap: balance;
     }
     .h-sub {
         font-family: var(--font-display);
         font-weight: 700;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
+        line-height: 1.12;
+        letter-spacing: calc(0.4px - 0.03em);
         font-size: clamp(26px, 2.5vw, 38px);
         text-wrap: balance;
     }
@@ -206,8 +218,9 @@
         font-family: var(--font-serif);
         font-weight: 300;
         font-size: clamp(16px, 1.4vw, 21px);
-        line-height: 1.2;
-        letter-spacing: 0.01em;
+        line-height: 1.25;
+        /* Light serif capitals need air to read as words, not a block. */
+        letter-spacing: 0.06em;
         text-transform: uppercase;
     }
     /* Accordion row titles (itinerary days, good to know, FAQ): lighter and
@@ -215,14 +228,17 @@
     .h-row {
         font-family: var(--font-display);
         font-weight: 600;
-        line-height: 1.25;
-        letter-spacing: 0.03em;
+        line-height: 1.3;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--night);
     }
     .standfirst {
         font-size: 16px;
         font-weight: 300;
+        line-height: 1.65;
+        /* Light weight thins the strokes; open spacing keeps letters distinct. */
+        letter-spacing: 0.012em;
         color: var(--ink-soft);
     }
     .meta {
@@ -361,11 +377,15 @@
     /* Rich text from the CMS (blogs, info pages, trip overview) */
     .rich {
         font-size: 16px;
-        line-height: 1.7;
+        line-height: 1.75;
+        letter-spacing: 0.008em;
         color: #2e2a25;
     }
     .rich > * + * {
-        margin-top: 1em;
+        margin-top: 1.1em;
+    }
+    .rich li + li {
+        margin-top: 0.4em;
     }
     .rich h2,
     .rich h3,
@@ -373,10 +393,14 @@
         font-family: var(--font-display);
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.01em;
-        line-height: 1.15;
+        letter-spacing: 0.025em;
+        line-height: 1.2;
         color: var(--ink);
-        margin-top: 1.8em;
+        margin-top: 2em;
+    }
+    /* Pull copy toward its heading so each section reads as one unit. */
+    .rich :is(h2, h3, h4) + * {
+        margin-top: 0.6em;
     }
     /* Clear the sticky header when jumping from the table of contents. */
     .rich h2,
@@ -413,6 +437,7 @@
     .rich figcaption {
         margin-top: 0.6em;
         font-size: 14px;
+        line-height: 1.5;
         color: var(--ink-muted);
     }
     /* Images in table cells are logos/thumbnails, not full-width photos. */
@@ -431,6 +456,8 @@
         padding-left: 1em;
         font-weight: 300;
         font-size: 19px;
+        line-height: 1.55;
+        letter-spacing: 0.01em;
     }
     .rich .rich-table {
         width: 100%;

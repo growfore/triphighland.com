@@ -471,7 +471,7 @@ function GuestCard({ t, featured }: { t: Testimonial; featured?: boolean }) {
       <TestimonialQuote
         text={plainContent(t.content)}
         lines={featured ? 9 : 5}
-        className={featured ? "text-xl font-light leading-[1.4] sm:text-[26px]" : "text-[17px] font-light leading-[1.45]"}
+        className={featured ? "text-xl font-light leading-[1.45] tracking-[0.005em] sm:text-[26px]" : "text-[17px] font-light leading-[1.55] tracking-[0.01em]"}
       />
       <figcaption className={`mt-auto flex items-center gap-4 border-t pt-5 ${featured ? "border-white/15" : "border-line"}`}>
         <span className={`relative flex size-12 flex-none items-center justify-center overflow-hidden rounded-full ${featured ? "bg-night-raised" : "bg-paper"}`}>

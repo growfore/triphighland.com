@@ -231,7 +231,7 @@ export default async function TripPage({ params }: Props) {
 
             {L.trip.note && (
               <div className="mt-16 flex flex-wrap items-center justify-between gap-8 bg-highland p-8 text-[#0E1F2E] sm:p-[clamp(40px,5vw,64px)]">
-                <p className="max-w-[760px] text-xl font-semibold leading-tight tracking-[-0.015em] sm:text-[clamp(21px,1.8vw,26px)]">
+                <p className="max-w-[760px] text-xl font-semibold leading-snug tracking-[-0.01em] sm:text-[clamp(21px,1.8vw,26px)]">
                   {L.trip.note}
                 </p>
                 <a href="#enquire" className="btn meta bg-[#0E1F2E] px-9 py-5 text-[14px] tracking-[0.1em] text-white hover:bg-black">
