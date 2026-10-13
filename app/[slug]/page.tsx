@@ -7,6 +7,11 @@ import Article from "@/components/site/article";
 
 export const revalidate = 300;
 
+// Render each slug on first request, then serve it from cache (ISR).
+export async function generateStaticParams() {
+  return [];
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 // Info pages (about-us, terms-and-conditions, gear-rental, ...) live at the

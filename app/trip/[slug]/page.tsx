@@ -19,6 +19,11 @@ import { absolute, absoluteMedia, breadcrumbLd, siteUrl } from "@/lib/seo";
 
 export const revalidate = 300;
 
+// Render each slug on first request, then serve it from cache (ISR).
+export async function generateStaticParams() {
+  return [];
+}
+
 // Overviews longer than this get the clipped preview + "Show more" dialog.
 const OVERVIEW_PREVIEW_CHARS = 280;
 

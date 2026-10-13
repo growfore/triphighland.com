@@ -74,9 +74,10 @@ export type SiteConfig = {
 };
 
 export const getSiteConfig = cache(async (): Promise<SiteConfig> => {
-  // no-store: dashboard edits (copy, images, section order) must show on the
-  // next page load, as on the TripEleven storefront.
-  const body = await getJson<{ data?: { config?: Record<string, unknown> } }>("/site-config", { cache: "no-store", next: undefined });
+  // Short revalidate: dashboard edits (copy, images, section order) show within
+  // a minute, while pages stay statically cached instead of rendering per request.
+  // The "site-config" tag lets a dashboard webhook purge it with revalidateTag.
+  const body = await getJson<{ data?: { config?: Record<string, unknown> } }>("/site-config", { next: { revalidate: 60, tags: ["site-config"] } });
   const c = (body?.data?.config ?? {}) as Raw;
   return {
     name: c.name || "Highland Treasure",
