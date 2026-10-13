@@ -5,7 +5,8 @@
 
 @theme inline {
     --font-sans: var(--font-inter-tight);
-    --font-display: var(--font-montserrat);
+    --font-display: var(--font-archivo);
+    --font-serif: var(--font-newsreader);
     --font-mono: var(--font-plex-mono);
 
     /* Editorial palette (design style tile) */
@@ -123,7 +124,8 @@
         font-size: 16px;
         line-height: 1.55;
     }
-    /* Headings: Montserrat Bold. Classes below add the uppercase. */
+    /* Headings: Archivo Bold, sentence case (editorial, Lonely Planet-like).
+       Only hero titles (.display-hero) and accordion rows (.h-row) go uppercase. */
     h1,
     h2,
     h3,
@@ -132,6 +134,7 @@
     h6 {
         font-family: var(--font-display);
         font-weight: 700;
+        letter-spacing: -0.015em;
     }
     /* Emphasis is weight contrast, not italics. */
     em {
@@ -139,7 +142,7 @@
         font-weight: 300;
     }
     /* Titles are one weight throughout: no light words inside them. */
-    :is(h1, h2, h3, h4, h5, h6, .display, .h-section, .h-sub) em {
+    :is(h1, h2, h3, h4, h5, h6, .display, .display-hero, .h-section, .h-sub) em {
         font-weight: inherit;
     }
     select,
@@ -160,24 +163,54 @@
         font-family: var(--font-display);
         font-weight: 700;
         line-height: 1.12;
-        letter-spacing: 0.005em;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+    }
+    /* Hero titles: condensed, heavy, uppercase — the one loud voice per page. */
+    .display-hero {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-stretch: 62%;
+        font-variation-settings: "wdth" 62;
+        line-height: 0.95;
+        letter-spacing: -0.005em;
         text-transform: uppercase;
+        text-wrap: balance;
     }
     .h-section {
         font-family: var(--font-display);
         font-weight: 700;
-        line-height: 1.12;
-        letter-spacing: 0.005em;
-        text-transform: uppercase;
-        font-size: clamp(24px, 2.4vw, 36px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-size: clamp(30px, 3.2vw, 48px);
+        text-wrap: balance;
     }
     .h-sub {
         font-family: var(--font-display);
         font-weight: 700;
-        line-height: 1.12;
-        letter-spacing: 0.005em;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        font-size: clamp(26px, 2.5vw, 38px);
+        text-wrap: balance;
+    }
+    /* Light serif capitals above a title (the dashboard's "eyebrow" copy). */
+    .kicker {
+        font-family: var(--font-serif);
+        font-weight: 300;
+        font-size: clamp(16px, 1.4vw, 21px);
+        line-height: 1.2;
+        letter-spacing: 0.01em;
         text-transform: uppercase;
-        font-size: clamp(22px, 2vw, 32px);
+    }
+    /* Accordion row titles (itinerary days, good to know, FAQ): lighter and
+       more open than section headings, in the brand navy. */
+    .h-row {
+        font-family: var(--font-display);
+        font-weight: 600;
+        line-height: 1.25;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--night);
     }
     .standfirst {
         font-size: 16px;
@@ -199,10 +232,14 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        min-height: 44px;
-        padding: 12px 24px;
-        border-radius: 0;
+        min-height: 46px;
+        padding: 12px 26px;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 14px;
         font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         text-decoration: none;
         cursor: pointer;
         transition:
@@ -244,9 +281,9 @@
         font-size: 13px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        border: 1.5px solid var(--ink);
-        border-radius: 0;
-        padding: 11px 22px;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        padding: 10px 22px;
         transition:
             background-color 0.2s,
             color 0.2s;
@@ -391,30 +428,62 @@
         width: 100%;
         overflow-x: auto;
     }
+    /* Keep columns readable on phones; the wrapper scrolls sideways instead. */
+    .rich .rich-table table {
+        min-width: 600px;
+    }
     .rich table {
         width: 100%;
         border-collapse: collapse;
-        border: 1px solid var(--line);
-        font-size: 16px;
+        border: 1px solid var(--line-soft);
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+        background: rgb(255 255 255 / 0.45);
     }
     .rich th,
     .rich td {
-        padding: 12px 16px;
-        border: 1px solid var(--line);
+        padding: 13px 18px;
+        border: 1px solid var(--line-soft);
         text-align: left;
         vertical-align: middle;
+    }
+    .rich tbody tr:nth-child(even) {
+        background: rgb(234 229 218 / 0.45);
+    }
+    .rich tbody tr {
+        transition: background-color 0.15s;
+    }
+    .rich tbody tr:hover {
+        background: var(--highland-tint);
+    }
+    /* Editors often bold the key row (e.g. the highest camp): tint it to match. */
+    .rich tbody tr:has(td > strong:only-child, td > b:only-child) {
+        background: var(--highland-tint);
+        color: var(--night);
+    }
+    /* Text after a table reads as its footnote. */
+    .rich :is(.rich-table, table) + p {
+        font-size: 14px;
+        color: var(--ink-muted);
     }
     /* The editor wraps cell text in <p>; drop its spacing inside cells. */
     .rich :is(td, th) > * + * {
         margin-top: 0.5em;
     }
-    .rich th {
-        font-family: var(--font-mono);
-        font-size: 13px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--ink-muted);
+    /* Header cells: brand blue band, whether the editor used <th> or a first <tr>. */
+    .rich th,
+    .rich thead td {
+        background: var(--highland-deep);
+        border-color: var(--highland-deep);
+        color: #fff;
+        font-weight: 600;
+        font-size: 15px;
     }
+}
+
+/* Two stone bands in a row read as one: drop the second band's top padding. */
+.band-stone + .band-stone > :first-child {
+    padding-top: 0;
 }
 
 @keyframes drift {

@@ -31,7 +31,7 @@ export default async function BookingPage({ searchParams }: { searchParams: Prom
           <Photo src={selected?.images[0] || header?.image || config.image} alt="" sizes="(min-width: 1024px) 50vw, 100vw" priority />
         </div>
         <div className="min-w-0 flex-[1_1_520px] px-4 py-14 sm:px-[clamp(20px,5vw,96px)] sm:py-[clamp(48px,6vw,112px)]">
-          {header?.eyebrow && <p className="meta mb-4 text-[12px] text-night-muted">{header.eyebrow}</p>}
+          {header?.eyebrow && <p className="kicker mb-4 text-night-muted">{header.eyebrow}</p>}
           <h1 className="display text-[30px] leading-[1.1] sm:text-[clamp(26px,2.5vw,38px)]">
             {header?.title || selected?.title || getLabels(config.content).trip.bookNow}
           </h1>

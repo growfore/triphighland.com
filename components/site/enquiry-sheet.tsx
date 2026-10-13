@@ -62,7 +62,7 @@ export default function EnquirySheet({ trips, tripSlugs, currency, whatsAppNumbe
         <Dialog.Content className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right fixed inset-y-0 right-0 z-50 flex w-full flex-col overflow-y-auto bg-night text-white shadow-2xl data-[state=closed]:duration-300 data-[state=open]:duration-500 sm:max-w-[560px]">
           <div className="flex items-start justify-between gap-6 px-6 pb-2 pt-6 sm:px-10 sm:pt-10">
             <div className="min-w-0">
-              {heading.eyebrow && <p className="meta mb-3 text-[12px] text-night-muted">{heading.eyebrow}</p>}
+              {heading.eyebrow && <p className="kicker mb-3 text-night-muted">{heading.eyebrow}</p>}
               <Dialog.Title className="display text-[24px] sm:text-[28px]">{heading.title}</Dialog.Title>
               {trip && <p className="mt-3 text-[15px] text-highland">{trip}</p>}
             </div>

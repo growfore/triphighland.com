@@ -36,7 +36,7 @@ export default function TripCard({ trip, labels }: { trip: TripSummary; labels: 
         <Photo src={trip.images[0]} alt={trip.title} sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" />
       </div>
       <div className="meta mt-4 text-[12px]">{tripMeta(trip)}</div>
-      <h3 className="display mt-2 text-[17px] leading-snug">{trip.title}</h3>
+      <h3 className="display mt-2 text-[21px] leading-[1.15] sm:text-[23px]">{trip.title}</h3>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-5">
         <span className="btn-mono px-4 py-2 text-[12px]">{labels.viewItinerary}</span>
         <PriceFrom price={trip.price} labels={labels} />

@@ -74,11 +74,11 @@ export default function HeroSlider({
       <div className="wrap relative z-10 flex min-h-[calc(100svh-3.5rem)] items-end pb-24 pt-24 sm:pb-12 lg:min-h-[calc(100svh-4rem)] lg:pb-16">
         {/* Wide and short: on large screens title and copy sit side by side instead of stacking. */}
         {/* Translucent so the photo reads through; the light blur keeps text legible over busy detail. */}
-        <div className="w-full max-w-[960px] bg-paper/75 text-ink shadow-[0_18px_48px_-12px_rgba(14,12,10,.35)] backdrop-blur-[6px] backdrop-saturate-150">
+        <div className="w-full max-w-[960px] origin-bottom-left md:-rotate-[1.2deg] bg-paper/75 text-ink shadow-[0_18px_48px_-12px_rgba(14,12,10,.35)] backdrop-blur-[6px] backdrop-saturate-150">
           <div aria-live={paused ? "polite" : "off"} className="grid gap-x-10 p-6 sm:px-9 sm:py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-end">
+            {eyebrow && <p className="kicker mb-3 text-ink-soft lg:col-span-2">{eyebrow}</p>}
             <div>
-              {eyebrow && <p className="meta mb-4 text-[11px] text-ink-soft">{eyebrow}</p>}
-              <h1 className="display text-balance text-[26px] leading-[1.08] sm:text-[clamp(30px,2.6vw,40px)]">{s.title}</h1>
+              <h1 className="display-hero text-[42px] sm:text-[clamp(48px,4.4vw,68px)]">{s.title}</h1>
             </div>
             <div>
               {s.description && (

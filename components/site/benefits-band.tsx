@@ -24,7 +24,7 @@ export default async function BenefitsBand() {
                 {b.icon ? <Photo src={b.icon} alt="" sizes="64px" className="!object-contain p-3.5" /> : <Icon size={28} strokeWidth={1.8} />}
               </span>
               <div>
-                <h2 className="text-lg font-bold uppercase leading-tight sm:text-xl">{b.title}</h2>
+                <h2 className="display text-xl leading-tight sm:text-2xl">{b.title}</h2>
                 {b.copy && <p className="mt-2.5 text-[15px] leading-relaxed text-ink-muted">{b.copy}</p>}
               </div>
             </li>

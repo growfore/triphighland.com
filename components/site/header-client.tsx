@@ -80,7 +80,7 @@ export default function HeaderClient({ name, logo, showName, items, trips, whats
 
           <nav
             aria-label="Primary"
-            className="hidden flex-1 items-center gap-8 px-8 text-[13px] font-medium uppercase tracking-[0.04em] lg:flex"
+            className="hidden flex-1 items-center gap-8 px-8 font-serif text-[16px] font-normal uppercase tracking-[0.01em] lg:flex"
           >
             {inlineItems.map((item) =>
               isMega(item) ? <MegaMenu key={item.id} item={item} trips={trips} /> : <NavEntry key={item.id} item={item} />,

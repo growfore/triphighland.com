@@ -73,8 +73,10 @@ export function RailControls({ light }: { light?: boolean }) {
     const el = trackRef.current;
     if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
   };
-  const btn = `flex size-11 items-center justify-center border transition-colors disabled:cursor-default disabled:opacity-30 ${
-    light ? "border-white/40 hover:enabled:bg-white/10" : "border-ink/25 hover:enabled:border-ink hover:enabled:bg-ink hover:enabled:text-paper"
+  const btn = `flex size-11 items-center justify-center transition-colors disabled:cursor-default ${
+    light
+      ? "border border-white/40 hover:enabled:bg-white/10 disabled:opacity-30"
+      : "bg-ink text-paper hover:enabled:bg-night disabled:bg-stone disabled:text-ink-muted"
   }`;
   return (
     <div className="flex gap-2">

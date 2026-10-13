@@ -33,21 +33,23 @@ export default async function ContactPage() {
         title="Contact"
       />
       <section className="wrap flex flex-wrap gap-x-24 gap-y-14 py-12 lg:py-20">
-        <dl className="min-w-0 flex-[1_1_360px]">
-          {channels.map((c) => (
-            <div key={c.label + c.value} className="border-t border-line py-6">
-              <dt className="meta text-[12px] text-ink-muted">{c.label}</dt>
-              <dd className="mt-2 text-lg font-medium sm:text-xl">
-                {c.href ? (
-                  <a href={c.href} className="break-words hover:text-highland-deep" {...(c.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-                    {c.value}
-                  </a>
-                ) : (
-                  c.value
-                )}
-              </dd>
-            </div>
-          ))}
+        <div className="min-w-0 flex-[1_1_360px]">
+          <dl>
+            {channels.map((c) => (
+              <div key={c.label + c.value} className="border-t border-line py-6">
+                <dt className="meta text-[12px] text-ink-muted">{c.label}</dt>
+                <dd className="mt-2 text-lg font-medium sm:text-xl">
+                  {c.href ? (
+                    <a href={c.href} className="break-words hover:text-highland-deep" {...(c.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                      {c.value}
+                    </a>
+                  ) : (
+                    c.value
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
           {Object.keys(config.socials).length > 0 && (
             <div className="flex flex-wrap gap-3 border-t border-line pt-6">
               {Object.entries(config.socials).map(([network, url]) =>
@@ -59,7 +61,7 @@ export default async function ContactPage() {
               )}
             </div>
           )}
-        </dl>
+        </div>
         <div className="min-w-0 flex-[1_1_520px] rounded-[4px] bg-night p-6 text-paper sm:p-12">
           <h2 className="display text-xl sm:text-2xl">{labels.trip.bookNow}</h2>
           <div className="mt-8">

@@ -50,7 +50,7 @@ function Heading({ copy, fallback, aside, light }: { copy?: SectionCopy; fallbac
   return (
     <div className="mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-13">
       <div className="max-w-[760px]">
-        {copy?.eyebrow && <p className={`meta mb-4 text-[12px] ${light ? "text-night-muted" : "text-ink-muted"}`}>{copy.eyebrow}</p>}
+        {copy?.eyebrow && <p className={`kicker mb-4 ${light ? "text-night-muted" : "text-ink-muted"}`}>{copy.eyebrow}</p>}
         <h2 className="h-section">{copy?.title || fallback}</h2>
         {copy?.description && (
           <p className={`mt-5 text-base font-light ${light ? "text-night-muted" : "text-ink-soft"}`}>{plainContent(copy.description)}</p>
@@ -115,8 +115,8 @@ export async function Hero({ ctx }: { ctx: HomeCtx }) {
       <Photo src={image} alt="" sizes="100vw" priority position="50% 40%" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,10,.45)_0%,rgba(14,12,10,.15)_30%,rgba(14,12,10,.2)_60%,rgba(14,12,10,.75)_100%)]" />
       <div className="wrap relative flex flex-1 flex-col items-center justify-end pb-10 pt-24 text-center md:justify-center md:pb-24">
-        {eyebrow && <p className="meta mb-5 text-[12px] text-white/85">{eyebrow}</p>}
-        <h1 className="display max-w-4xl text-[30px] leading-[1.1] sm:text-[clamp(34px,3.9vw,58px)]">{headline}</h1>
+        {eyebrow && <p className="kicker mb-5 text-white/85">{eyebrow}</p>}
+        <h1 className="display-hero max-w-5xl text-[44px] sm:text-[clamp(56px,6vw,96px)]">{headline}</h1>
         {sub && <p className="mx-auto mt-5 max-w-[620px] text-base font-light text-white/90 sm:mt-7 sm:text-lg">{sub}</p>}
       </div>
     </section>
@@ -136,7 +136,7 @@ export function WhyUs({ ctx }: { ctx: HomeCtx }) {
   return (
     <section className="wrap flex flex-wrap items-start gap-x-24 gap-y-12 py-16 lg:py-28">
       <div className="min-w-0 flex-[1_1_540px]">
-        {about.eyebrow && <p className="meta mb-4 text-[12px] text-ink-muted">{about.eyebrow}</p>}
+        {about.eyebrow && <p className="kicker mb-4 text-ink-muted">{about.eyebrow}</p>}
         {about.title && <h2 className="display text-[26px] sm:text-[clamp(24px,2.1vw,32px)]">{about.title}</h2>}
         {about.copy && (
           <div className="rich mt-6 max-w-[580px] font-light text-ink-soft" dangerouslySetInnerHTML={{ __html: richContent(about.copy) }} />
@@ -181,7 +181,7 @@ export const FEATURED_TAG_SECTIONS = 3;
 // paper / stone backgrounds. Title and description come from the tag itself.
 // `afterFirst` is slotted in after the first featured block (the homepage puts
 // the category tiles there); it still renders when there are no featured trips.
-export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: ReactNode }) {
+export async function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: ReactNode }) {
   const bySlug = new Map(ctx.trips.map((t) => [t.slug, t]));
   const sections = ctx.groups
     // Tags switched off for the homepage in the dashboard stay out.
@@ -190,12 +190,25 @@ export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: React
     .filter((g) => g.trips.length)
     .slice(0, FEATURED_TAG_SECTIONS);
   if (!sections.length) return afterFirst ?? null;
+  // A tag holding a single trip gets the spotlight layout instead of a one-card rail.
+  const spotlights = new Map(
+    await Promise.all(sections.filter((g) => g.trips.length === 1).map(async (g) => [g.slug, await getTrip(g.trips[0].slug)] as const)),
+  );
 
   return (
     <>
       {sections.map((g, i) => (
         <Fragment key={g.slug}>
-          {/* Alternate backgrounds, counting the stone category tiles as one band. */}
+          {spotlights.get(g.slug) ? (
+            <TripFeature
+              id={`featured-${g.slug}`}
+              trip={spotlights.get(g.slug)!}
+              labels={ctx.labels}
+              eyebrow={g.label}
+              description={g.description}
+            />
+          ) : (
+          /* Alternate backgrounds, counting the stone category tiles as one band. */
           <section id={`featured-${g.slug}`} className={`py-16 lg:py-24 ${(i + (afterFirst && i > 0 ? 1 : 0)) % 2 ? "bg-stone" : ""}`}>
             <ScrollRail>
               <div className="wrap mb-10 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
@@ -214,6 +227,7 @@ export function Featured({ ctx, afterFirst }: { ctx: HomeCtx; afterFirst?: React
               </RailTrack>
             </ScrollRail>
           </section>
+          )}
           {i === 0 && afterFirst}
         </Fragment>
       ))}
@@ -365,24 +379,59 @@ export function TripOfMonth({ ctx }: { ctx: HomeCtx }) {
   const copy = ctx.config.content.sections?.tripOfMonth;
   if (!f) return null;
   return (
-    <section className="relative lg:pt-16">
+    <TripFeature
+      trip={f}
+      labels={ctx.labels}
+      eyebrow={copy?.eyebrow}
+      title={copy?.title}
+      subtitle={copy?.subtitle}
+      description={copy?.description}
+      cta={copy?.viewItinerary}
+    />
+  );
+}
+
+// Single-trip spotlight: full-bleed photo with an overlapping paper card.
+// Used for the trip of the month and for featured tags holding one trip.
+function TripFeature({
+  trip,
+  labels,
+  eyebrow,
+  title,
+  subtitle,
+  description,
+  cta,
+  id,
+}: {
+  trip: TripDetail;
+  labels: Labels;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  cta?: string;
+  id?: string;
+}) {
+  const blurb = description || trip.overview;
+  return (
+    <section id={id} className="relative lg:pt-16">
       <div className="relative h-[360px] overflow-hidden sm:h-[560px] lg:h-[820px]">
-        <Photo src={f.images[1] ?? f.images[0]} alt={f.title} sizes="100vw" />
+        <Photo src={trip.images[1] ?? trip.images[0]} alt={trip.title} sizes="100vw" />
       </div>
       <div className="wrap relative -mt-24 flex justify-end pb-16 lg:-mt-[300px] lg:pb-0">
         <Link
-          href={`/trip/${f.slug}`}
-          className="ht-card block w-full max-w-[640px] rounded-[4px] bg-paper p-6 text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.35)] sm:p-[clamp(32px,4vw,60px)]"
+          href={`/trip/${trip.slug}`}
+          // Slight counter-tilt to the hero card: a printed card laid on the photo.
+          className="ht-card block w-full max-w-[640px] origin-bottom-right bg-paper p-6 text-ink shadow-[0_30px_60px_-30px_rgba(26,23,20,.35)] transition-transform duration-500 sm:p-[clamp(32px,4vw,60px)] lg:rotate-[1.2deg] lg:hover:rotate-0"
         >
-          <div className="meta text-[12px] sm:text-sm">{[copy?.eyebrow, f.duration].filter(Boolean).join(" · ")}</div>
-          <h2 className="display mt-4 text-xl sm:mt-5 sm:text-[clamp(22px,1.9vw,28px)]">{copy?.title || f.title}</h2>
-          {copy?.subtitle && <p className="mt-2 text-base font-light">{copy.subtitle}</p>}
-          {(copy?.description || f.overview) && (
-            <p className="standfirst mt-5 line-clamp-4 sm:mt-6">{plainContent(copy?.description || f.overview)}</p>
-          )}
+          {eyebrow && <p className="kicker text-ink-soft">{eyebrow}</p>}
+          <h2 className="h-sub mt-2">{title || trip.title}</h2>
+          {trip.duration && <div className="meta mt-3 text-[12px] text-ink-muted">{trip.duration}</div>}
+          {subtitle && <p className="mt-2 text-base font-light">{subtitle}</p>}
+          {blurb && <p className="standfirst mt-5 line-clamp-4 sm:mt-6">{plainContent(blurb)}</p>}
           <div className="mt-7 flex flex-wrap items-center gap-6 sm:mt-8">
-            <span className="btn-mono">{copy?.viewItinerary || ctx.labels.card.viewItinerary}</span>
-            <PriceFrom price={f.price} labels={ctx.labels.card} />
+            <span className="btn-mono">{cta || labels.card.viewItinerary}</span>
+            <PriceFrom price={trip.price} labels={labels.card} />
           </div>
         </Link>
       </div>
@@ -593,7 +642,7 @@ export function Newsletter({ ctx }: { ctx: HomeCtx }) {
     <section className="bg-night text-paper">
       <div className="wrap flex flex-wrap items-end justify-between gap-10 py-16 lg:py-24">
         <div className="max-w-[640px]">
-          {copy?.eyebrow && <p className="meta mb-4 text-[12px] text-night-muted">{copy.eyebrow}</p>}
+          {copy?.eyebrow && <p className="kicker mb-4 text-night-muted">{copy.eyebrow}</p>}
           {n.title && <h2 className="h-section">{n.title}</h2>}
           {n.description && <p className="mt-5 text-base font-light text-night-muted">{n.description}</p>}
         </div>
@@ -619,7 +668,7 @@ export function Information({ ctx }: { ctx: HomeCtx }) {
           </div>
         )}
         <div className="min-w-0 flex-[1_1_520px]">
-          {info.eyebrow && <p className="meta mb-4 text-[12px] text-night-muted">{info.eyebrow}</p>}
+          {info.eyebrow && <p className="kicker mb-4 text-night-muted">{info.eyebrow}</p>}
           {info.title && <h2 className="display text-[26px] sm:text-[clamp(22px,1.7vw,26px)]">{info.title}</h2>}
           {info.copy && (
             <div

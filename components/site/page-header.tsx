@@ -30,8 +30,8 @@ export default function PageHeader({
         <div
           className={`flex min-w-0 flex-col justify-end px-4 pb-12 pt-14 sm:px-[clamp(20px,4vw,64px)] lg:pb-18 lg:pt-24 ${img ? "flex-[1_1_520px] lg:min-h-[520px]" : "mx-auto w-full max-w-[1440px]"}`}
         >
-          {eye && <p className="meta mb-5 text-[12px] text-night-muted">{eye}</p>}
-          <h1 className="display max-w-[1000px] text-[30px] leading-[1.1] sm:text-[clamp(31px,3vw,45px)]">{fields?.title || title}</h1>
+          {eye && <p className="kicker mb-4 text-night-muted">{eye}</p>}
+          <h1 className="display-hero max-w-[1000px] text-[44px] sm:text-[clamp(56px,6vw,96px)]">{fields?.title || title}</h1>
           {sub && <p className="mt-6 max-w-[640px] text-base font-light leading-relaxed text-[#DCE5EE] sm:text-lg">{sub}</p>}
           {children}
         </div>

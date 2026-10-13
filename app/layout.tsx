@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { interTight, montserrat, plexMono } from "@/lib/font";
+import { archivo, interTight, newsreader, plexMono } from "@/lib/font";
 import { getSiteConfig, getTrips } from "@/lib/site";
 import { getLabels } from "@/lib/labels";
 import { imageUrl, whatsappLink } from "@/lib/media";
@@ -41,7 +41,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const whatsapp = whatsappLink(config.whatsAppNumber);
 
   return (
-    <html lang="en" className={`${interTight.variable} ${montserrat.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${interTight.variable} ${archivo.variable} ${newsreader.variable} ${plexMono.variable}`}>
       <body>
         <JsonLd data={organizationLd(config)} />
         <Header />

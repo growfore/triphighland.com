@@ -31,7 +31,7 @@ export default function NewsletterForm({ labels, heading }: { labels: Labels["ne
       {state === "done" ? (
         <p className="mt-5 text-night-muted">{labels.success}</p>
       ) : (
-        <div className={`${heading ? "mt-5" : ""} flex border border-paper/25 bg-white/[0.06] p-1.5 transition-colors focus-within:border-highland`}>
+        <div className={`${heading ? "mt-5" : ""} flex rounded-full border border-paper/25 bg-white/[0.06] p-1 pl-3 transition-colors focus-within:border-highland`}>
           <input
             id={id}
             name="email"
@@ -43,7 +43,7 @@ export default function NewsletterForm({ labels, heading }: { labels: Labels["ne
           <button
             type="submit"
             disabled={state === "sending"}
-            className="min-h-11 flex-none bg-highland px-6 text-[14px] font-medium text-night transition-colors hover:bg-[#6fa5d4] disabled:opacity-60"
+            className="meta min-h-11 flex-none rounded-full bg-highland px-6 text-[13px] font-medium text-night transition-colors hover:bg-[#6fa5d4] disabled:opacity-60"
           >
             {state === "sending" ? "…" : labels.button}
           </button>

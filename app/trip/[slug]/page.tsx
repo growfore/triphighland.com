@@ -153,7 +153,7 @@ export default async function TripPage({ params }: Props) {
             )}
           </nav>
           <div className="mt-16 lg:mt-auto">
-            <h1 className="display text-[30px] leading-[1.1] sm:text-[clamp(31px,2.8vw,42px)]">{trip.title}</h1>
+            <h1 className="display-hero text-[42px] sm:text-[clamp(52px,4.6vw,76px)]">{trip.title}</h1>
             {overviewText &&
               (overviewText.length > OVERVIEW_PREVIEW_CHARS ? (
                 <OverviewMore title={L.trip.overview} html={richContent(trip.overview)} preview={overviewText} />
@@ -213,7 +213,7 @@ export default async function TripPage({ params }: Props) {
       {/* HIGHLIGHTS */}
       {trip.highlights.length > 0 && (
         <section className="wrap py-16 lg:py-28">
-          <h2 className="h-sub">{L.trip.highlights}</h2>
+          <h2 className="h-sub text-night">{L.trip.highlights}</h2>
           <ul className="mt-8 list-disc space-y-2.5 pl-5 text-base leading-relaxed marker:text-highland-deep sm:text-[17px]">
             {trip.highlights.map((h) => (
               <li key={h} className="pl-1">
@@ -235,9 +235,9 @@ export default async function TripPage({ params }: Props) {
 
       {/* DAY BY DAY */}
       {trip.itinerary.length > 0 && (
-        <section id="itinerary" className="bg-[#ECEAE3]">
+        <section id="itinerary" className="band-stone bg-[#ECEAE3]">
           <div className="wrap pb-16 pt-14 lg:pb-28 lg:pt-25">
-            <h2 className="h-sub mb-9">{L.trip.itinerary}</h2>
+            <h2 className="h-sub text-night mb-9">{L.trip.itinerary}</h2>
             <DayAccordion days={trip.itinerary} labels={L.trip} />
 
             {L.trip.note && (
@@ -257,7 +257,7 @@ export default async function TripPage({ params }: Props) {
       {/* ROUTE MAP — natural aspect ratio, never cropped; opens full size */}
       {routeMap && (
         <section id="route-map" className="wrap py-16 lg:py-24">
-          <h2 className="h-sub">{L.trip.routeMap}</h2>
+          <h2 className="h-sub text-night">{L.trip.routeMap}</h2>
           <a href={routeMap} target="_blank" rel="noreferrer" className="mt-9 block bg-stone">
             <Image
               src={routeMap}
@@ -275,7 +275,7 @@ export default async function TripPage({ params }: Props) {
       {/* DEPARTURES */}
       {departures.length > 0 && (
         <section id="departures" className="wrap py-16 lg:py-24">
-          <h2 className="h-sub">{L.trip.departures}</h2>
+          <h2 className="h-sub text-night">{L.trip.departures}</h2>
           <ul className="mt-9 border-t border-line">
             {departures.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-x-8 gap-y-3 border-b border-line py-5 sm:py-6">
@@ -307,7 +307,7 @@ export default async function TripPage({ params }: Props) {
         <section className="wrap flex max-w-[1440px] flex-col gap-12 py-16 lg:py-24">
           {trip.inclusions.length > 0 && (
             <div>
-              <h2 className="h-sub">{L.trip.included}</h2>
+              <h2 className="h-sub text-night">{L.trip.included}</h2>
               <ul className="mt-6 flex flex-col">
                 {trip.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
@@ -320,7 +320,7 @@ export default async function TripPage({ params }: Props) {
           )}
           {trip.exclusions.length > 0 && (
             <div>
-              <h2 className="h-sub">{L.trip.excluded}</h2>
+              <h2 className="h-sub text-night">{L.trip.excluded}</h2>
               <ul className="mt-6 flex flex-col">
                 {trip.exclusions.map((item) => (
                   <li key={item} className="flex items-start gap-4 py-2.5 text-base sm:text-[17px]">
@@ -338,7 +338,7 @@ export default async function TripPage({ params }: Props) {
       {addons.length > 0 && (
         <section id="addons" className="border-t border-line-soft">
           <div className="wrap py-16 lg:py-24">
-            <h2 className="h-sub">{L.trip.addons}</h2>
+            <h2 className="h-sub text-night">{L.trip.addons}</h2>
             <ul className="mt-9 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {addons.map((a) => (
                 <li key={a.id} className="flex flex-col">
@@ -370,11 +370,11 @@ export default async function TripPage({ params }: Props) {
 
       {/* GOOD TO KNOW + FAQ — stacked accordions, styled like the itinerary */}
       {(trip.additionalInfo.length > 0 || trip.faq.flatMap((g) => g.items ?? []).length > 0) && (
-        <section className="bg-[#ECEAE3]">
+        <section className="band-stone bg-[#ECEAE3]">
           <div className="wrap flex flex-col gap-16 py-16 lg:py-24">
             {trip.additionalInfo.length > 0 && (
               <div>
-                <h2 className="h-sub mb-9">{L.trip.goodToKnow}</h2>
+                <h2 className="h-sub text-night mb-9">{L.trip.goodToKnow}</h2>
                 <div className="border-t border-line">
                   {trip.additionalInfo.map((info) => (
                     <AccordionRow key={info.title} title={info.title} html={richContent(info.description)} />
@@ -384,7 +384,7 @@ export default async function TripPage({ params }: Props) {
             )}
             {trip.faq.flatMap((g) => g.items ?? []).length > 0 && (
               <div>
-                <h2 className="h-sub mb-9">Frequently Asked Questions</h2>
+                <h2 className="h-sub text-night mb-9">Frequently Asked Questions</h2>
                 {/* A lone "Default" (or untitled) group is just the plain list — no category heading. */}
                 <div className="flex flex-col gap-12">
                   {trip.faq
@@ -412,7 +412,7 @@ export default async function TripPage({ params }: Props) {
       {/* RELATED */}
       {related.length > 0 && (
         <section className="wrap py-16 lg:py-28">
-          <h2 className="h-sub mb-10 lg:mb-12">{config.content.sections?.featured?.title || config.content.pageHeaders?.explore?.title || "Explore"}</h2>
+          <h2 className="h-sub text-night mb-10 lg:mb-12">{config.content.sections?.featured?.title || config.content.pageHeaders?.explore?.title || "Explore"}</h2>
           <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {related.map((t) => (
               <TripCard key={t.id} trip={t} labels={L.card} size="md" />
@@ -435,7 +435,7 @@ function AccordionRow({ title, html }: { title: string; html: string }) {
   return (
     <details className="group border-b border-line">
       <summary className="flex cursor-pointer list-none items-center gap-4 py-5 transition-colors hover:bg-[#E4E1D8] sm:py-6 [&::-webkit-details-marker]:hidden">
-        <span className="display flex-1 text-base sm:text-[clamp(17px,1.5vw,22px)]">{title}</span>
+        <span className="h-row flex-1 text-base sm:text-[clamp(17px,1.4vw,21px)]">{title}</span>
         <span className="flex size-11 flex-none items-center justify-center transition-transform group-open:rotate-180">
           <ChevronDownIcon size={26} strokeWidth={1.6} />
         </span>
