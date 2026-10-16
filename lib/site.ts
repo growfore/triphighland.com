@@ -327,7 +327,9 @@ async function getNav(path: string): Promise<NavItem[]> {
   return walk(items);
 }
 
-export const getMenu = cache(() => getNav("/menu"));
+// The team page lives in the footer only; the API's auto menu adds it to the header too.
+const TEAM_URL = "/our-team";
+export const getMenu = cache(async () => (await getNav("/menu")).filter((i) => i.url !== TEAM_URL));
 export const getFooterNav = cache(() => getNav("/footer"));
 
 // Featured tags (best-selling, best-of-2026, ...). The /featured index is the

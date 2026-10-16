@@ -66,6 +66,12 @@ export default async function Footer() {
         },
       ];
 
+  // The team page is dropped from the header menu, so make sure the footer links it.
+  const last = columns.at(-1);
+  if (last && !columns.some((c) => c.links.some((l) => l.url === "/our-team"))) {
+    last.links = [...last.links, { id: "team", label: "Our team", url: "/our-team" }];
+  }
+
   return (
     <>
       {/* Homepage → Benefits, shown above the footer on every page. */}
