@@ -117,6 +117,13 @@ export default async function HomePage() {
   // dashboard order leaves whyUs out.
   if (!order.includes("whyUs") && !hidden.has("whyUs") && (content.home?.about?.title || content.home?.about?.copy)) order.unshift("whyUs");
   const s = content.sections ?? {};
+  // This block lists cities. The dashboard saves its title under sections.regions
+  // (Locations → Cities & places); sections.destinations is the older key, and
+  // the id-keyed entry covers orders that place the block as countries/regions.
+  const citiesCopy = (id?: string) =>
+    [s.regions, s.destinations, id ? s[id] : undefined].find((c) => (c as { title?: string } | undefined)?.title) as
+      | { title?: string }
+      | undefined;
   // Category tiles sit right after the first featured block, whatever the
   // dashboard order says, as long as both are shown.
   const tilesId = order.find((id) => id === "categoryTiles" || id === "categories");
@@ -136,7 +143,7 @@ export default async function HomePage() {
       case "destinations":
       case "countries":
       case "regions":
-        return <Destinations ctx={ctx} copy={s[id] as { title?: string }} />;
+        return <Destinations ctx={ctx} copy={citiesCopy(id)} />;
       case "stats":
         return <Stats ctx={ctx} />;
       case "tripOfMonth":
@@ -171,7 +178,7 @@ export default async function HomePage() {
       {!destinationsId && (
         <>
           <Information ctx={ctx} />
-          <Destinations ctx={ctx} copy={s.destinations} />
+          <Destinations ctx={ctx} copy={citiesCopy()} />
         </>
       )}
       {showJournal && (
